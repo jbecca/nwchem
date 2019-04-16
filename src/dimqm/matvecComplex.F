@@ -1,4 +1,5 @@
-      subroutine matvecComplex(rtdb, nlen, g_vec, g_rhs, xyz, ldbg)
+      subroutine matvecComplex(rtdb, nlen, g_vec, g_rhs, xyz, 
+     $                           ldbg, g_dim_diag_cplx, nDIM,nDIMTypes)
 c   =====================================================================
 c   Performs the operation A*x = b, where x and b are real.
 c
@@ -19,7 +20,6 @@ c   =====================================================================
 #include "global.fh"
 #include "testutil.fh"
 #include "dimqm_constants.fh"
-#include "dimqm.fh"
 c
 c     Input Variables
       integer rtdb
@@ -28,6 +28,7 @@ c     Input Variables
       integer g_rhs
       logical ldbg
       double precision xyz(3,nDIM)
+      integer nDIM,nDIMTypes
 c
 c     Local Variables
       integer ntype, mtype
@@ -35,12 +36,15 @@ c     Local Variables
       integer mLo, mUp, mOnNode, nodes
       double precision time
       double precision sPol(nDIMTypes)
-      double complex vec(nOrder)
+      double complex vec(3*nDIM)
       integer tx(nDIM) ! Type Index
-      double complex diagFD(nOrder)
+      double complex diagFD(3*nDIM)
       double complex fld(3)
       logical stat
       integer lo, hi
+c      integer g_DIM_diag
+      integer g_dim_diag_cplx
+      integer nOrder
 c
 c     Common variables used from dimqm.fh
 c
@@ -51,6 +55,7 @@ c      Determine node ID
       if(id.eq.0 .and. ldbg) write(LuOut,*)
      $   "Start MatvecComplex routine"
       time = util_timer()
+      nOrder = 3*nDIM
 c
 c      Initialize right hand side
       call ga_zero(g_rhs)
@@ -61,7 +66,7 @@ c
 c      Fill arrays
       stat = rtdb_get(rtdb, 'dimpar:sPol', mt_dbl, nDIMTypes, sPol)
       stat = rtdb_get(rtdb, 'dimpar:typeindex', mt_int, nDIM, tx)
-      call ga_get(g_DIM_diag, 1, nOrder, 1, 1, diagFD, 1)
+      call ga_get(g_dim_diag_cplx, 1, nOrder, 1, 1, diagFD, 1)
       call ga_get(g_vec, 1, nOrder, 1, 1, vec, 1)
       call ga_sync()
 

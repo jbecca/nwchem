@@ -309,7 +309,8 @@ c       ---------------------------------------------------------
      &        dbgsub,            ! in : logical var for debugging
      &        g_dipel_i,
      &        omega,
-     &        g_temp)           ! in : scratch GA array
+     &        g_temp,           ! in : scratch GA array
+     &        rtdb)           ! in : scratch GA array
             
             
           enddo                 ! iresp (responding field components)
@@ -361,7 +362,8 @@ c       ---------------------------------------------------------
      &        dbgsub,            ! in : logical var for debugging
      &        g_dipel_i,
      &        omega,
-     &        g_temp)           ! in : scratch GA array
+     &        g_temp,           ! in : scratch GA array
+     &        rtdb)           ! in : scratch GA array
             
             
           enddo                 ! iresp (responding field components)
@@ -387,7 +389,8 @@ c         if required, calculate dipole-quadrupole polarizability:
      &          dbgsub,          ! in : logical var for debugging
      &          g_dipel_i,
      &          omega,
-     &          g_temp)         ! in : scratch GA array       
+     &          g_temp,         ! in : scratch GA array       
+     &          rtdb)         ! in : scratch GA array       
             end do              ! iresp
           end if                ! lquad
           

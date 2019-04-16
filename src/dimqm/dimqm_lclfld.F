@@ -1,4 +1,4 @@
-      subroutine dimqm_lclfld(g_dipel, omega, lifetime, g_dipel_i)
+      subroutine dimqm_lclfld(rtdb, g_dipel, omega, lifetime, g_dipel_i)
 c
 c     
 c    
@@ -11,17 +11,18 @@ c
 #include "mafdecls.fh"
 #include "global.fh"
 #include "dimqm_constants.fh"
-#include "dimqm.fh"
 #include "geom.fh"
 #include "crohf.fh"
 #include "cscf.fh"
 c
 c     Input Variables
+      integer rtdb
       integer g_dipel        ! Global array handle to the dipole matrix
       logical lifetime        !damping or not
       integer g_dipel_i       !currently defined in dimqm.fh, might change
       double precision omega  ! freq value
 c
+
 c     Local variables
       integer g_tmp1, g_tmp2, g_dcv, g_dim_temp
       integer dims(3), chunk(3)
@@ -35,7 +36,7 @@ c     Local variables
       double precision dx_i, dy_i, dz_i
       integer l_dimxyz, k_dimxyz
       integer l_muind, k_muind
-c      integer l_muold, k_muold
+      integer l_muold, k_muold
       double precision dsum
       external dsum
       integer i3, ivec, n
@@ -53,22 +54,21 @@ c      integer l_muold, k_muold
       logical seed_save
       data direction /'x', 'y', 'z'/
       data pm /'+', '-'/
+      logical dimqm_noseed
+      integer nDIM
+      logical ldebug
 c
+      call dimqm_getnDIM(rtdb, nDIM)
+      call dimqm_get_debug(rtdb, ldebug)
       nvir = nmo - nclosed - nopen
       voff = nclosed + nopen + 1
       i3 = nDIM * 3
       icmplx = 1
       if(omega > ZERO) icmplx = 2
 
-c      write(luout,*) "omega:", omega
-c      write(luout,*) "icmplx:", icmplx
+      if (ldebug) write(luout,*) "omega:", omega
+      if (ldebug) write(luout,*) "icmplx:", icmplx
 
-      
-c      g_tmp1 = ga_create_atom_blocked(geom, basis, 'dim_lclfld: tmp1')
-c      g_tmp2 = ga_create_atom_blocked(geom, basis, 'dim_lclfld: tmp2')
-c     TODO: work out a way for FD without damping to run correctly, 
-c           although, the case itself makes little sense
-c      if(icmplx > 1 ) then
       if(lifetime) then
         alo(1) = nbf
         alo(2) = -1
@@ -103,13 +103,18 @@ c
       if(.not.ma_push_get(mt_dbl,i3,'dimrsp:xyz',l_dimxyz,k_dimxyz))
      $  call errquit('malloc dimrsp:xyz failed',1,MA_ERR)
 c
-      if(.not.rtdb_get(dimqm_rtdb,'dimpar:coords',mt_dbl,i3,
+      if(.not.rtdb_get(rtdb,'dimpar:coords',mt_dbl,i3,
      $                                dbl_mb(k_dimxyz)))
      $  call errquit('get dimpar:coords failed', 1, RTDB_ERR)
 
 c     Loop over xyz dsrections
+      if (.not. rtdb_get(rtdb, 'dimqm:noseed', mt_log,1,dimqm_noseed))
+     $      call errquit('dim_lcl: noseed get failed',1,RTDB_ERR)
+
+      call dimqm_get_noseed(rtdb, dimqm_noseed)
       seed_save = dimqm_noseed
       dimqm_noseed = .true.
+      call dimqm_put_noseed(rtdb, dimqm_noseed)
       do n = 1, 3
 c        do ipm = 1, icmplx ! +/- direction if it's complex
 c
@@ -126,21 +131,21 @@ c   Ones for current cartesian direction
         call dfill(nDIM,      ONE,  dbl_mb(k_fld+n-1), 3)
 c   
 c   Calculate induced dipoles
-        call dimqm_f2d(dimqm_rtdb, dbl_mb(k_fld),
+        call dimqm_f2d(rtdb, dbl_mb(k_fld),
      $                 dbl_mb(k_muind), dbl_mb(k_muold),
-     $                 dbl_mb(k_dimxyz), icmplx, 's', ' ',.false.)
+     $                 dbl_mb(k_dimxyz), icmplx, 's',nDIM)
 c       
         if(icmplx.eq.2 .and. lifetime) then
-          if(.not.rtdb_put(dimqm_rtdb,
+          if(.not.rtdb_put(rtdb,
      $                'dimqm:muind_'//direction(n)//'_r'//pm(1),
      $                           mt_dbl, i3, dbl_mb(k_muind)))
      $      call errquit('put dimqm:muind_r failed',1,RTDB_ERR)
-          if(.not.rtdb_put(dimqm_rtdb,
+          if(.not.rtdb_put(rtdb,
      $                'dimqm:muind_'//direction(n)//'_i'//pm(1),
      $                           mt_dbl, i3, dbl_mb(k_muind+i3)))
      $      call errquit('put dimqm:muind_i failed',1,RTDB_ERR)
         else
-          if(.not.rtdb_put(dimqm_rtdb,
+          if(.not.rtdb_put(rtdb,
      $      'dimqm:muind_'//direction(n),
      $       mt_dbl, i3, dbl_mb(k_muind)))
      $      call errquit('put dimqm:muind_r failed',1,RTDB_ERR)
@@ -353,123 +358,127 @@ c   =======
       end if
 !jbecca START
       dimqm_noseed = seed_save
+      call dimqm_put_noseed(rtdb, dimqm_noseed)
 c      call ga_print(g_dipel_i)
       end subroutine dimqm_lclfld
 
 
 
-      subroutine dimqm_addlclfld(g_dip, omega)
-c-----------------------------------------------------------------------
-c  This subroutine is used to create and add in the local field
-c  operator to the U (or A) matrix before solving the linear equations
-c  in response routines. This ensures that the QM system's response is 
-c  also dependent on any local fields that exist.
+c      subroutine dimqm_addlclfld(rtdb,g_dip, omega)
+cc-----------------------------------------------------------------------
+cc  This subroutine is used to create and add in the local field
+cc  operator to the U (or A) matrix before solving the linear equations
+cc  in response routines. This ensures that the QM system's response is 
+cc  also dependent on any local fields that exist.
+cc
+cc  Called from: nothing right now
+cc
+cc  Calls:   subroutine dimqm_f2d
+cc
+cc  Author: Jeff Becca, jbb5516@psu.edu, 2017
+cc-----------------------------------------------------------------------  
 c
-c  Called from: nothing right now
+c      implicit none
+c#include "errquit.fh"
+c#include "stdio.fh"
+c#include "rtdb.fh"
+c#include "mafdecls.fh"
+c#include "global.fh"
+c#include "dimqm_constants.fh"
+c#include "dimqm.fh"
+c#include "geom.fh"
+c#include "crohf.fh"
+c#include "cscf.fh"
 c
-c  Calls:   subroutine dimqm_f2d
+cc--------------------------- Input variables ---------------------------
+c      integer rtdb
+c      integer g_dip        !H10, used to initialize rhs
+c      integer omega        !frequency
 c
-c  Author: Jeff Becca, jbb5516@psu.edu, 2017
-c-----------------------------------------------------------------------  
-
-      implicit none
-#include "errquit.fh"
-#include "stdio.fh"
-#include "rtdb.fh"
-#include "mafdecls.fh"
-#include "global.fh"
-#include "dimqm_constants.fh"
-#include "dimqm.fh"
-#include "geom.fh"
-#include "crohf.fh"
-#include "cscf.fh"
-
-c--------------------------- Input variables ---------------------------
-      integer g_dip        !H10, used to initialize rhs
-      integer omega        !frequency
-
-c--------------------------- Local variables ---------------------------
-      integer icmplx, i3, ivec, n
-      integer alo(3), ahi(3), dims(3), chunk(3)
-      integer l_fld, k_fld, l_muind, k_muind, l_dimxyz, k_dimxyz
-      logical seed_save
-      character*(1) direction(3)
-      character*(1) pm(2)
-      data direction /'x', 'y', 'z'/
-      data pm /'+', '-'/ 
-c---------------------------- Routine START ----------------------------
-c  TODO: Update this for the case of complex local fields. Currently
-c        only caring about the real part of the local field. 
-      i3    =  nDIM * 3
-      icmplx = 1
-      if (omega > ZERO) icmplx = 2
-
-c  get some DIM stuff needed for setting up field
-
-      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dimrsp:fld',l_fld,k_fld))
-     $  call errquit('malloc dimrsp:fld failed',1,MA_ERR)
+cc--------------------------- Local variables ---------------------------
+c      integer icmplx, i3, ivec, n
+c      integer alo(3), ahi(3), dims(3), chunk(3)
+c      integer l_fld, k_fld, l_muind, k_muind, l_dimxyz, k_dimxyz
+c      integer l_muold, k_muold
+c      logical seed_save
+c      character*(1) direction(3)
+c      character*(1) pm(2)
+c      data direction /'x', 'y', 'z'/
+c      data pm /'+', '-'/ 
+c      logical dimqm_noseed
+cc---------------------------- Routine START ----------------------------
+cc  TODO: Update this for the case of complex local fields. Currently
+cc        only caring about the real part of the local field. 
+c      i3    =  nDIM * 3
+c      icmplx = 1
+c      if (omega > ZERO) icmplx = 2
 c
-      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dimrsp:muind',
-     $                                            l_muind,k_muind))
-     $  call errquit('malloc dimrsp:muind failed',1,MA_ERR)
-      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dimrsp:muold',
-     $                                            l_muold,k_muold))
-     $  call errquit('malloc dimrsp:muind failed',1,MA_ERR)
+cc  get some DIM stuff needed for setting up field
 c
-      if(.not.ma_push_get(mt_dbl,i3,'dimrsp:xyz',l_dimxyz,k_dimxyz))
-     $  call errquit('malloc dimrsp:xyz failed',1,MA_ERR)
+c      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dimrsp:fld',l_fld,k_fld))
+c     $  call errquit('malloc dimrsp:fld failed',1,MA_ERR)
+cc
+c      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dimrsp:muind',
+c     $                                            l_muind,k_muind))
+c     $  call errquit('malloc dimrsp:muind failed',1,MA_ERR)
+c      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dimrsp:muold',
+c     $                                            l_muold,k_muold))
+c     $  call errquit('malloc dimrsp:muind failed',1,MA_ERR)
+cc
+c      if(.not.ma_push_get(mt_dbl,i3,'dimrsp:xyz',l_dimxyz,k_dimxyz))
+c     $  call errquit('malloc dimrsp:xyz failed',1,MA_ERR)
+cc
+c      if(.not.rtdb_get(rtdb,'dimpar:coords',mt_dbl,i3,
+c     $                                dbl_mb(k_dimxyz)))
+c     $  call errquit('get dimpar:coords failed', 1, RTDB_ERR)
 c
-      if(.not.rtdb_get(dimqm_rtdb,'dimpar:coords',mt_dbl,i3,
-     $                                dbl_mb(k_dimxyz)))
-     $  call errquit('get dimpar:coords failed', 1, RTDB_ERR)
-
-      seed_save = dimqm_noseed
-      dimqm_noseed = .true.
-
-      do n = 1, 3
-
-c  zero arrays
-         call dfill(i3*icmplx, ZERO, dbl_mb(k_muind), 1)
-         call dfill(i3*icmplx, ZERO, dbl_mb(k_muold), 1)
-         call dfill(i3*icmplx, ZERO, dbl_mb(k_fld),   1)
-
-c  Create unit field in current cartesian direction for field
-         call dfill(nDIM,  ONE,  dbl_mb(k_fld+n-1),   3)
-
-c  Calculate the induced dipoles from the unit field
-         call dimqm_f2d(dimqm_rtdb, dbl_mb(k_fld),
-     $            dbl_mb(k_muind),  dbl_mb(k_muold),
-     $            dbl_mb(k_dimxyz), icmplx, 's', ' ',.false.)
-
-c  Store dipoles
-         if (icmplx.eq.1) then
-            if(.not.rtdb_put(dimqm_rtdb,
-     $      'dimqm:muind_'//direction(n),
-     $      mt_dbl, i3, dbl_mb(k_muind)))
-     $      call errquit('put dimqm:muindr_r failed',1,RTDB_ERR)
-         else
-          if(.not.rtdb_put(dimqm_rtdb,
-     $                'dimqm:muind_'//direction(n)//'_r'//pm(1),
-     $                           mt_dbl, i3, dbl_mb(k_muind)))
-     $      call errquit('put dimqm:muind_r failed',1,RTDB_ERR)
-          if(.not.rtdb_put(dimqm_rtdb,
-     $                'dimqm:muind_'//direction(n)//'_i'//pm(1),
-     $                           mt_dbl, i3, dbl_mb(k_muind+i3)))
-     $      call errquit('put dimqm:muind_i failed',1,RTDB_ERR)
-        end if
-      end do ! ivec = 1, 3
-
-      if (.not. ma_chop_stack(l_fld)) call errquit('lclfld: MA?', 0,
-     $       MA_ERR)
+c      seed_save = dimqm_noseed
+c      dimqm_noseed = .true.
 c
-c   ====================================================
-c   Solve for DIM potential
-c   ====================================================
+c      do n = 1, 3
 c
-      dims(1) = 3
-      dims(2) = nbf
-      dims(3) = nbf
-      chunk(1) = dims(1)
-      chunk(2) = -1
-      chunk(3) = -1
-      end subroutine dimqm_addlclfld
+cc  zero arrays
+c         call dfill(i3*icmplx, ZERO, dbl_mb(k_muind), 1)
+c         call dfill(i3*icmplx, ZERO, dbl_mb(k_muold), 1)
+c         call dfill(i3*icmplx, ZERO, dbl_mb(k_fld),   1)
+c
+cc  Create unit field in current cartesian direction for field
+c         call dfill(nDIM,  ONE,  dbl_mb(k_fld+n-1),   3)
+c
+cc  Calculate the induced dipoles from the unit field
+c         call dimqm_f2d(rtdb, dbl_mb(k_fld),
+c     $            dbl_mb(k_muind),  dbl_mb(k_muold),
+c     $            dbl_mb(k_dimxyz), icmplx, 's')
+c
+cc  Store dipoles
+c         if (icmplx.eq.1) then
+c            if(.not.rtdb_put(rtdb,
+c     $      'dimqm:muind_'//direction(n),
+c     $      mt_dbl, i3, dbl_mb(k_muind)))
+c     $      call errquit('put dimqm:muindr_r failed',1,RTDB_ERR)
+c         else
+c          if(.not.rtdb_put(rtdb,
+c     $                'dimqm:muind_'//direction(n)//'_r'//pm(1),
+c     $                           mt_dbl, i3, dbl_mb(k_muind)))
+c     $      call errquit('put dimqm:muind_r failed',1,RTDB_ERR)
+c          if(.not.rtdb_put(rtdb,
+c     $                'dimqm:muind_'//direction(n)//'_i'//pm(1),
+c     $                           mt_dbl, i3, dbl_mb(k_muind+i3)))
+c     $      call errquit('put dimqm:muind_i failed',1,RTDB_ERR)
+c        end if
+c      end do ! ivec = 1, 3
+c
+c      if (.not. ma_chop_stack(l_fld)) call errquit('lclfld: MA?', 0,
+c     $       MA_ERR)
+cc
+cc   ====================================================
+cc   Solve for DIM potential
+cc   ====================================================
+cc
+c      dims(1) = 3
+c      dims(2) = nbf
+c      dims(3) = nbf
+c      chunk(1) = dims(1)
+c      chunk(2) = -1
+c      chunk(3) = -1
+c      end subroutine dimqm_addlclfld

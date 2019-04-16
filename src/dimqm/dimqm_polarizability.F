@@ -17,7 +17,6 @@ c  ==================================================================
 #include "testutil.fh"
 #include "util.fh"
 #include "dimqm_constants.fh"
-#include "dimqm.fh"
 c
 c     Input variables
       integer rtdb        ! RTDB handle
@@ -27,6 +26,7 @@ c     MA handles
       integer k_fld, l_fld
       integer l_dimxyz, k_dimxyz ! DIM coordinates handles
       integer l_muind,  k_muind  ! DIM dipoles handles
+      integer l_muold,  k_muold
 c
 c     Local variables
       integer idir, m, i3
@@ -38,6 +38,10 @@ c     Local variables
       double precision dsum
       external dsum
       logical seed_save
+      logical dimqm_noseed
+      integer nDIM, nOrder
+      logical lfirst
+      logical ldebug
 c
 c   Common variables used
 c      logical lcpim, lcmplx, ldebug
@@ -47,6 +51,9 @@ c   ==========
 c   Initialize 
 c   ==========
 c
+      call dimqm_getnDIM(rtdb, nDIM)
+      nOrder = 3*nDIM
+      call dimqm_get_debug(rtdb, ldebug)
       i3 = 3 * nDIM
       id = ga_nodeid()
       icmplx = 1
@@ -86,8 +93,11 @@ c   ===================================================
 c
       time = util_timer()
       lfirst = .true.
+      call dimqm_setlfirst(rtdb, lfirst)
       seed_save = dimqm_noseed
       dimqm_noseed = .true.
+      if(.not.rtdb_put(rtdb,'dimqm:noseed',mt_log,1,dimqm_noseed))
+     $  call errquit('dimqm_input: noseed put failed', 1, RTDB_ERR)
       do idir = 1, 3
 c
 c           Zero field
@@ -98,7 +108,7 @@ c           Unit field in specified direction
           call dfill(nDIM, ONE, dbl_mb(k_fld+idir-1), 3)
           call dimqm_f2d(rtdb, dbl_mb(k_fld),
      $                   dbl_mb(k_muind), dbl_mb(k_muold),
-     $                   dbl_mb(k_dimxyz), icmplx, 's', ' ',.false.)
+     $                   dbl_mb(k_dimxyz), icmplx, 's',nDIM)
 c           Sum up dipoles to get polarizability
           pol(1,idir,1) = dsum(nDIM, dbl_mb(k_muind), 3)
           pol(2,idir,1) = dsum(nDIM, dbl_mb(k_muind+1), 3)

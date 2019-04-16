@@ -209,9 +209,9 @@ c jbecca START DIMQM
       use_dimqm=util_module_avail('dimqm')
 
       if (use_dimqm) then
-         call dimqm_used(ldimqm)
-         call dimqm_getlrsp(lrsp)
-         call dimqm_getlclfld(lclfld)
+         call dimqm_used(rtdb,ldimqm)
+         call dimqm_getlrsp(rtdb,lrsp)
+         call dimqm_getlclfld(rtdb,lclfld)
       else
          ldimqm   =  .false.
          lrsp     =  .false.
@@ -251,7 +251,7 @@ c        parameter if using a frequency dependent local field
 
       if (ldimqm .and. lrsp .and. lclfld) then 
          !write(luout,*)'calling dimqm_lclfld for resp.eq.'
-         call dimqm_lclfld(g_dipole1,omega,lifetime,g_dipel_i)
+         call dimqm_lclfld(rtdb,g_dipole1,omega,lifetime,g_dipel_i)
       endif
 
 c jbecca END   ------------- DIM/QM -----------------
@@ -329,7 +329,7 @@ c  jbecca END DIM/QM
        enddo ! end-loop-ipm
       enddo ! end-loop-ispin
 c jbecca start DIMQM
-      if (ldimqm .and. lrsp .and. lclfld) call dimqm_tidy()
+c      if (ldimqm .and. lrsp .and. lclfld) call dimqm_tidy()
       if (ldimqm .and. lrsp .and. lclfld .and. lifetime) then
          if (.not.ga_destroy(g_dipel_i_tmp)) call errquit
      $      ('fiao_f1: ga_destroy failed g_dipel_i_tmp',0,GA_ERR)

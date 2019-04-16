@@ -1,4 +1,5 @@
-      subroutine dimqm_printAtomicDipoles(rtdb, lpol, liscmplx, label)
+      subroutine dimqm_printAtomicDipoles(rtdb, lpol, liscmplx,   
+     $                                       label, nDIM, nDIMTypes)
       implicit none
 #include "stdio.fh"
 #include "util.fh"
@@ -6,7 +7,6 @@
 #include "errquit.fh"
 #include "mafdecls.fh"
 #include "dimqm_constants.fh"
-#include "dimqm.fh"
 #include "global.fh"
 c
 c   Input variables
@@ -14,6 +14,7 @@ c   Input variables
       logical lpol
       logical liscmplx
       character(len=*) label
+      integer nDIM, nDIMTypes
 c
 c   Local variables
       double precision diptot(3)
@@ -34,8 +35,6 @@ c   Local variables
       character*16 mu_str
 c      character*16 q_str
 c
-c   Return without execution if this table is not requested
-      if(.not.latmdip) return
       if(ga_nodeid().eq..0) then
         stat = rtdb_parallel(.false.)
 c

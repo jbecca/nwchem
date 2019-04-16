@@ -1,4 +1,4 @@
-      subroutine fock_dim(geom, nbf_ao, ao_bas_han,
+      subroutine fock_dim(rtdb,geom, nbf_ao, ao_bas_han,
      &   nfock, g_dim, ipm, imag)
 c  ==================================================================
 c  Wrapper routine to call dim_quadv0 for response calculations
@@ -15,8 +15,8 @@ c
 #include "rtdb.fh"
 #include "util.fh"
 #include "stdio.fh"
-#include "dimqm.fh"
 c
+      integer rtdb
       integer geom              ! [input] Geometry handle
       integer nbf_ao,ao_bas_han ! [input] No. of AOs and AO handle
       integer nfock             ! [input] No. of XC matrices
@@ -33,15 +33,17 @@ c                               !         = 4 * No. of density matx (UDFT)
 c
 c     Local declarations
       integer i3
+      logical ldebug
+      call dimqm_get_debug(rtdb, ldebug)
 c
       if (ldebug .and. ga_nodeid().eq.0)
      $   write(luout,*) 'Entered fock_dim'
 c
-      dimqm_geom = geom
-      i3 = 3*nDIM
+c      dimqm_geom = geom
+c      i3 = 3*nDIM
 c
 c   Call quadrature routine for solving the DIM potential      
-       call dim_grid_quadv0_gen(dimqm_rtdb, g_dim, nfock,
+       call dim_grid_quadv0_gen(rtdb, g_dim, nfock,
      $                          2, .true., ipm, imag)
 c
       return

@@ -11,14 +11,17 @@
          pphilo.o dimqm_fldpot.o dimqm_EqmN.o \
          dimqm_printAtomicDipoles.o dimqm_energy.o \
          dimqm_printDipole.o \
-         dimqm_Dens2Dipoles.o dimqm_indDipoles.o \
+         dimqm_indDipoles.o \
          dimqm_printAtoms.o dimqm_addop.o dimqm_lclfld.o \
          seeded_qmr_real.o \
-         qmr_seed_real.o seeded_qmr_real_augment.o \
-         dimqm_tidy.o qmr_seed_complex.o seeded_qmr_complex.o \
-         dimqm_broadcast.o CubicSpline.o dim_fock_xc.o \
-         dim_getv.o dim_tabcd.o dim_eval_fnl.o \
+         qmr_seed_real.o \
+         qmr_seed_complex.o seeded_qmr_complex.o \
+         CubicSpline.o dim_fock_xc.o dimpar_input2.o \
+         dim_tabcd.o dim_eval_fnl.o \
          dim_grid_quadv0.o dim_grid_quadv0a.o dim_grid_quadv0b.o \
+         dimqm_input2.o dimpar_input2.o dimqm_main2.o dimqm_fldpot2.o\
+         dimqm_direct.o qmr_real2.o dim_eval_fnl2.o\
+         dimqm_f2d2.o dimqm_iterative2.o dimqm_EqmE2.o dimqm_EqmN2.o\
          dimqm_seeding.o dimqm_rohf.o dimqm_util.o dimqm_addop_uhf.o
 
    LIBRARY = libdimqm.a
@@ -32,7 +35,7 @@
 
 USES_BLAS = qmr_real.F dimqm_main.F 
 
-HEADERS = dimqm.fh dimqm_constants.fh
+HEADERS = dimqm_constants.fh
 
 include ../config/makefile.h
 include ../config/makelib.h

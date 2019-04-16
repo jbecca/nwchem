@@ -221,6 +221,7 @@ cc     AJL/Begin/FDE
       logical ldimqm, dimqm_go
       double precision edimqm
       double precision eelec
+      integer nDIM, g_muold
 cc     AJL/End
 c
       gotsmear(ss)=abs(ss).gt.1d-9
@@ -455,9 +456,16 @@ c     Jorge Garza/End
       endif
       use_dimqm = util_module_avail("dimqm")
       if (use_dimqm) then
-         call dimqm_init(rtdb)
-         call dimqm_used(ldimqm)
-         call dimqm_getgo(dimqm_go)
+c         call dimqm_init(rtdb)
+         call dimqm_used(rtdb, ldimqm)
+         if (ldimqm) then
+           call dimqm_getgo(rtdb, dimqm_go)
+           call dimqm_getnDIM(rtdb, nDIM)
+           write(luout,*)'ldimqm',ldimqm
+           write(luout,*)'dimqm_go',dimqm_go
+           if(.not.ga_create(mt_dbl,3*nDIM,1,'dimqm:muold',0,0,g_muold))
+     $         call errquit('dim: create g_muold failed',1,GA_ERR)
+         endif
       else
          ldimqm=.false.
          dimqm_go=.false.
@@ -1140,7 +1148,9 @@ c     Calculate DIM/QM dipoles
 c     We use the total density to calculate the dipoles.
 c
       if(ldimqm .and. dimqm_go) then
-        call dimqm_main(rtdb, ao_bas_han, geom, g_dens, .false.)
+c        call dimqm_main(rtdb, ao_bas_han, geom, g_dens, .false.,nDIM)
+        call dimqm_main2(rtdb, ao_bas_han, geom, g_dens, .false.,nDIM,
+     $                        g_muold)
       end if
 
 c
@@ -1723,7 +1733,7 @@ c
 c     DIM/QM JEM
       if(use_dimqm) then
          dimqm_go = .true.
-         call dimqm_setgo(dimqm_go)
+         call dimqm_setgo(rtdb,dimqm_go)
       endif
       call ga_sync
       if (oprint_time)
@@ -1818,8 +1828,9 @@ c     DIM/QM JEM
 c     Add DIM energy
       if(ldimqm .and. dimqm_go) then
 c  jbecca START: this was missed in code cleaning
-c         call dimqm_energy(edimqm)
-         call dimqm_getenergy(edimqm)
+         edimqm = 0.0d0
+         call dimqm_getenergy(rtdb, edimqm)
+         write(luout,*)'edimqm1',edimqm
 c  jbecca END
          Etnew = Etnew + Edimqm
       endif
@@ -2019,7 +2030,8 @@ c        NOTE: Why are we redoing this energy sum?
          if(ldimqm .and. dimqm_go) then
 c  jbecca START: it appears this was missed in the house-cleaning
 c            call dimqm_energy(edimqm)
-            call dimqm_getenergy(edimqm)
+            write(luout,*)'edimqm2',edimqm
+c            call dimqm_getenergy(rtdb, Edimqm)
 c  jbecca END
             Etnew = Etnew + Edimqm
          endif
@@ -2108,7 +2120,9 @@ c     DIM/QM JEM
 c     Final DIM dipoles
 c
       if (ldimqm) then
-        call dimqm_main(rtdb, ao_bas_han, geom, g_dens, .true.)
+c        call dimqm_main(rtdb, ao_bas_han, geom, g_dens, .true., nDIM)
+        call dimqm_main2(rtdb, ao_bas_han, geom, g_dens, .true., nDIM,
+     $                        g_muold)
       end if
 
 c

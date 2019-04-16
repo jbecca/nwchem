@@ -575,6 +575,8 @@ c     fiao_f1_movecs but deallocated here.
 c     determine frequency and number of components
       
       omega = dbl_mb(k_fr + this_resporder -1 )
+      if (.not. rtdb_put(rtdb, 'dimqm:omega', mt_dbl, 1, omega)) 
+     &  call errquit('aoresponse:failed to write omega', 0, RTDB_ERR)
       lstatic = (abs(omega).lt.tenm8) ! static response or not
       ncomp = 2                 ! no. of Fourier components to treat
       if (lstatic) ncomp = 1
@@ -592,15 +594,15 @@ c     if static, do not run with damping.
 c  jbecca END
 c  jbecca START
       if (use_dimqm) then
-         call dimqm_used(ldimqm)
-         call dimqm_getlclfld(lclfld)
+         call dimqm_used(rtdb,ldimqm)
+         call dimqm_getlclfld(rtdb,lclfld)
       else
          ldimqm=.false.
          lclfld=.false.
       endif
-      if (ldimqm .and. lclfld) then
-        call dimqm_prep(rtdb, omega)
-      end if
+c      if (ldimqm .and. lclfld) then
+c        call dimqm_prep(rtdb, omega)
+c      end if
 c jbecca END
       
       call fiao_f1_movecs(
@@ -615,6 +617,9 @@ c jbecca END
      &  g_vecF1_im,             ! out:
      &  1)                      ! in : index for cphf_file
 
+c      if (ldimqm .and. lclfld) call dimqm_tidy()
+
+c      call errquit('i got here',0,GA_ERR) 
       if (debug) write(luout,*) 'aor_driver: F1(omega) done'
 
 c     repeat this for zero frequency if we use the modified
@@ -765,14 +770,20 @@ c  jbecca START: moved initialization of dimqm before fiao_f1_movecs.
 c  it is needed there to add lclfld contribution to linear response.
 c  lclfld is added here again to add its contribution to the dipole mat
       if (ldimqm) then
-        call dimqm_prep(rtdb, omega)
+        if (debug) write(luout,*) 'aor_driver: calling dimqm_prep'
+c        call dimqm_prep(rtdb, omega)
+        if (debug) write(luout,*) 'aor_driver: back from dimqm_prep'
       end if
 
       if (ldimqm .and. lclfld) then
 c     call in with .false., use g_dipel, create g_dipel_i in routine
-        call dimqm_lclfld(g_dipel, omega, lifetime, g_dipel_i)
+        if (debug) write(luout,*) 'aor_driver: calling dimqm_lclfld'
+        call dimqm_lclfld(rtdb,g_dipel, omega, lifetime, g_dipel_i)
+        if (debug) write(luout,*) 'aor_driver: back from dimqm_lclfld'
 c        if ((omega .le. 1d-8).or.(.not.lifetime))
 c     &       call ga_zero(g_dipel_i)
+c        call dimqm_tidy()
+      
       end if
 
 c     ------------------------------------------------
@@ -1166,7 +1177,12 @@ c
 c     DIM/QM JEM
 c     Calculate the DIM polarizability
       if (ldimqm) then
+        if (debug) write(luout,*)'calling dimqm_prep for pol'
+c        call dimqm_prep(rtdb, omega)
+        if (debug) write(luout,*)'calling dimqm_pol'
         call dimqm_polarizability(rtdb, omega)
+        if (debug) write(luout,*)'calling dimqm_tidy'
+c        call dimqm_tidy()
       end if
 c     
 c     == Raman bits ==
@@ -1233,7 +1249,7 @@ c     deallocate global arrays
      &    errquit('aor_driver: ga_destroy failed g_quadel',0,GA_ERR)
       end if
 !DIM/QM start
-      if (ldimqm) call dimqm_tidy()
+c      if (ldimqm) call dimqm_tidy()
       if (ldimqm .and. lclfld .and. lifetime) then
          if (.not. ga_destroy(g_dipel_i)) call errquit
      &      ('aores_driver: g_dipel_i destroy?',0,GA_ERR)

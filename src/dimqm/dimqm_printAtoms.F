@@ -1,4 +1,4 @@
-      subroutine dimqm_printAtoms(rtdb, xyz)
+      subroutine dimqm_printAtoms(rtdb, xyz, nDIM, nDIMTypes)
       implicit none
 #include "stdio.fh"
 #include "util.fh"
@@ -6,12 +6,12 @@
 #include "errquit.fh"
 #include "mafdecls.fh"
 #include "dimqm_constants.fh"
-#include "dimqm.fh"
 #include "global.fh"
 c
 c   Input variables
       integer rtdb
       double precision xyz(3, nDIM)
+      integer nDIM, nDIMTypes
 c
 c   Local variables
       integer tx(nDIM)

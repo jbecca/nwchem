@@ -253,17 +253,17 @@ c !!! BGJ
       endif
 c     DIM/QM JEM
       if (use_dimqm) then
-         call dimqm_used(ldimqm)
-         call dimqm_getlrsp(lrsp)
+         call dimqm_used(rtdb,ldimqm)
+         call dimqm_getlrsp(rtdb,lrsp)
       else
          ldimqm=.false.
          lrsp=.false.
       endif
       if (ldimqm .and. lrsp) then
         lfirst = .true.
-        call dimqm_setlfirst(lfirst)
+        call dimqm_setlfirst(rtdb,lfirst)
         dimqm_go = .false.
-        call dimqm_setgo(dimqm_go)
+        call dimqm_setgo(rtdb,dimqm_go)
       end if
       if(scftype .eq. 'UHF')then
          call uhf_init(rtdb)
@@ -336,9 +336,9 @@ c 000000000000000 prepare guess 000000000000 END
 
 c     DIM/QM JEM
 c     Prep DIM/QM for response      
-      if (ldimqm .and. lrsp) then
-        call dimqm_prep(rtdb, -1d0)
-      end if
+c      if (ldimqm .and. lrsp) then
+c        call dimqm_prep(rtdb, -1d0)
+c      end if
 
       if (scftype .eq. 'UHF') then
 c
@@ -449,9 +449,9 @@ c == copy solution (g_work) --> g_grad 2nd subspace===END
          call rohf_tidy
       endif
       call scf_tidy(rtdb)
-      if (ldimqm .and. lrsp) then
-        call dimqm_tidy()
-      endif
+c      if (ldimqm .and. lrsp) then
+c        call dimqm_tidy()
+c      endif
 
       return
       end

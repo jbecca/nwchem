@@ -1,5 +1,5 @@
-      subroutine dimqm_f2d(rtdb, fld, muind, muold, xyz, icmplx, dir,
-     $                     pm, doefield)
+      subroutine dimqm_f2d(rtdb, fld, muind, muold, 
+     $                        xyz, icmplx, dir, nDIM)
       implicit none
 #include "errquit.fh"
 #include "inp.fh"
@@ -9,7 +9,6 @@
 #include "mafdecls.fh"
 #include "global.fh"
 #include "dimqm_constants.fh"
-#include "dimqm.fh"
 c
 c     Input variables
       integer rtdb
@@ -18,8 +17,10 @@ c     Input variables
       double precision muind(3, nDIM, icmplx)
       double precision muold(3, nDIM, icmplx)
       double precision xyz(3, nDIM)
-      character dir, pm
-      logical doefield
+      character dir
+      integer nDIM
+      integer nOrder
+c      logical doefield
 c
 c     Common variables used
 c      logical lcpim, ldebug
@@ -28,14 +29,16 @@ c      double precision totcharge
 c
 c     Local variables
       integer i, i3, i0, id, iAtom, iOrder
-      double precision tempArr(nOrder, icmplx)
+      double precision tempArr(3*nDIM, icmplx)
       logical stat
       logical iscmplx
+      logical ldebug
 c
 c     Initallize
 c      write(luout,*) "i3: ", 3*nDIM
 c      write(luout,*) "nORDER: ", nOrder
       id = ga_nodeid()
+      call dimqm_get_debug(rtdb, ldebug)
       if(id.eq.0.and.ldebug) write(LuOut,*)
      $   "Begin dimqm_f2d"
       i3 = 3 * nDIM
@@ -98,13 +101,13 @@ c  Solve equation a*x=b. Before calling, tempArr is b. After, tempArr is x.
 c  Use either a UDU decomposed matrix to solve directly or solve iteratively.
 c  ---------------------------------------------------------------------------
 c
-      if(alg == 0) then
+c      if(alg == 0) then
 c       Exact Solver.  Might be done another time.
-      else
+c      else
 c       Iterative solver!
         call dimqm_iterative(rtdb, tempArr(:,:), muold, xyz, icmplx,
-     $                       iscmplx, dir, pm)
-      end if
+     $                       iscmplx, dir, nDIM)
+c      end if
 c      write(luout,*) "Dipoles: "
 c      write(luout,*) tempArr
 c

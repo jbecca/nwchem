@@ -1,4 +1,5 @@
-      subroutine matvecReal(rtdb, nlen, g_vec, g_rhs, xyz, ldbg)
+      subroutine matvecReal(rtdb, nlen, g_vec, g_rhs, xyz, 
+     $                        ldbg, g_dim_diag_real,nDIM,nDIMTypes)
 c   ==================================================================
 c   Performs the operation A*x = b, where x and b are real.
 c
@@ -15,7 +16,6 @@ c   ==================================================================
 #include "global.fh"
 #include "testutil.fh"
 #include "dimqm_constants.fh"
-#include "dimqm.fh"
 c
 c     Input Variables
       integer rtdb
@@ -24,6 +24,8 @@ c     Input Variables
       integer g_rhs
       logical ldbg
       double precision xyz(3,nDIM)
+      integer g_dim_diag_real
+      integer nDIM, nDIMTypes
 c
 c     Variables from dimqm common blocks
 c      integer nDIM, nDIMTypes, nOrder, g_DIM_diag
@@ -34,16 +36,21 @@ c     Local Variables
       integer mLo, mUp, mOnNode, nodes
       double precision time
       double precision sPol(nDIMTypes)
-      double precision vec(nOrder)
+      double precision vec(3*nDIM)
       integer tx(nDIM) ! Type Index
-      double precision diagS(nOrder)
+      double precision diagS(3*nDIM)
       double precision fld(3)
       logical stat
       integer lo, hi
+      integer nOrder
+      integer nprocs
+c      integer g_DIM_diag
       call ga_sync()
+      nOrder = 3*nDIM
 c
 c      Determine node ID
       id = ga_nodeid()
+      nprocs = ga_nnodes()
       if(ldbg .and. id.eq.0) write(LuOut,*)
      $   "Start MatvecReal routine"
       time = util_timer()
@@ -52,17 +59,24 @@ c      Zero right-hand side
       call ga_zero(g_rhs)
 c
 c      Determine chunk to be done on this node
-      call pphilo(id, nDIM, mLo, mUp, mOnNode)
+c      call pphilo(id, nDIM, mLo, mUp, mOnNode)
 c
 c      Pull values from RTDB and GAs
       stat = rtdb_get(rtdb, 'dimpar:sPol', mt_dbl, nDIMTypes, sPol)
       stat = rtdb_get(rtdb, 'dimpar:typeindex', mt_int, nDIM, tx)
-      call ga_get(g_DIM_diag, 1, nOrder, 1, 1, diagS, 1)
+      call ga_init_fence()
+      call ga_get(g_DIM_diag_real, 1, nOrder, 1, 1, diagS, 1)
       call ga_get(g_vec, 1, nOrder, 1, 1, vec, 1)
+      call ga_fence()
+c debug stuff
+c      write(luout,*)'diagS',diagS
+c      write(luout,*)'vec',vec
+c      write(luout,*)'sPol',sPol
+c      write(luout,*)'tx', tx
       call ga_init_fence()
 c
 c      Loop over atoms on this node
-      do m = mLo, mUp
+      do m = 1, nDIM 
         mtype = tx(m)
         fld = ZERO
         ms = 3 * (m - 1) + 1
@@ -80,7 +94,7 @@ c      Loop over atoms on this node
      $                                     vec(ns:ne),   ! Vector x in A*x = b
      $                                     ldbg)         ! debug
         end do
-        call ga_acc(g_rhs, ms, me, 1, 1, fld, 1, ONE)
+        call ga_acc(g_rhs, ms, me, 1, 1, fld, 1, ONE/nprocs)
       end do
       call ga_fence()
       time = util_timer() - time

@@ -1,6 +1,6 @@
-      subroutine qmr_seed_real(rtdb, nlen, g_work, niter, tol, ierr,
-     $                    unknowns, matvec, xyz, ldebug,
-     $                   dir, g_dim_diag_real, nDIM, nDIMTypes)
+      subroutine qmr_real2(rtdb, nlen, g_work, niter, tol, ierr,
+     $                 g_fld, matvec, xyz, ldebug, 
+     $                  g_dim_diag_real, nDIM, nDIMTypes)
 c
 c     Fancy QMR algorithm.  Will document later.
 c      use constants
@@ -14,6 +14,8 @@ c      use constants
 #include "global.fh"
 #include "testutil.fh"
 #include "dimqm_constants.fh"
+#include "tcgmsg.fh"
+#include "msgids.fh"
 c
 c     Input Variables
       integer rtdb
@@ -22,12 +24,11 @@ c     Input Variables
       integer niter
       double precision tol
       integer ierr
-      integer g_unknowns
+c      integer g_unknowns
       external matvec
-      double precision xyz(3,*)
-      double precision unknowns(nlen)
+      double precision xyz(3,nDIM)
+      integer g_fld
       logical ldebug
-      character dir
       integer g_dim_diag_real
       integer nDIM, nDIMTypes
 c
@@ -44,10 +45,8 @@ c     Local variables
       double precision scv, scpn, scs
       double precision u_n_minus1, dtmp
       integer i
-      integer id, ld, k_seed, l_seed
-      integer ilo, ihi, jlo, jhi
+      integer id
       double precision time
-      logical stat
 c
 c     BLAS/LAPACK routines
       external          dlamch
@@ -60,7 +59,7 @@ c
 c     Get node ID
       id = ga_nodeid()
       if(id.eq.0.and.ldebug) then
-        write(LuOut,*) "Start seed QMR routine"
+        write(LuOut,*) "Start QMR real routine"
         call util_flush(LuOut)
       end if
 c     Check tolerances of the machine
@@ -76,32 +75,22 @@ c     Zero work arrays
       do i = 1, 6
         call ga_zero(g_work(i))
       end do
-      if(id.eq.0) then
-        if(.not.ma_push_get(mt_dbl, nlen, 'qmr:seedtemp', l_seed,
-     $                      k_seed))
-     $      call errquit('qmr real malloc k_seed failed', 1, MA_ERR)
-        call dfill(nlen, ZERO, dbl_mb(k_seed), 1)
-      end if
-
 c
 c     Initalize by copying input field to work 2 and 3
-      call ga_put(g_work(2), 1, nLen, 1, 1, unknowns, 1)
+      call ga_copy(g_fld, g_work(2))
+      call ga_sync()
       call ga_copy(g_work(2), g_work(3))
       call ga_sync()
 c
 c     Initial residual
-c     res_0 = dnrm2(nlen,unknowns,1)
+c      res_0 = dnrm2(nlen,unknowns,1)
       res_0 = SQRT(ga_ddot(g_work(3), g_work(3)))
+c
 c
 c     If already converged, exit here
       if((tol >= ONE) .or. (res_0 <= tol)) then
         niter = 0
         tol = res_0
-        if(.not.rtdb_put(rtdb,'seed:k'//dir, mt_int, 1, niter))
-     $    call errquit('put seed:k failed', 1, RTDB_ERR)
-        if(id.eq.0) then
-          stat = ma_pop_stack(l_seed)
-        end if
         return
       end if
 c
@@ -134,8 +123,10 @@ c       Check for invariant subspaces, and scale the vectors if needed.
         ierr = 0
         if (scpn * scv < nrm_tol) ierr = 5
         if (ierr /= 0) return ! A-invarient subspace
+c        write(luout,*)'scv',scv
 c
         d_n = ga_ddot(g_work(3), g_work(3)) / (scv**2)
+c        call ga_print(g_work(3))
         if((scv >= max_tol) .or. (scv <= min_tol)) then
           dtmp = ONE / scv
           call ga_scale(g_work(3), dtmp)
@@ -179,38 +170,11 @@ c       Get the next scaling factor omega(i) and update omegamax
         omegamax    = MAX(omegamax, ONE/omega)
 c
 c       Apply the previous rotation
-        res_n_minus1 = sinn * res_n 
-        res_n        = cosn * res_n 
+        res_n_minus1 = sinn * res_n
+        res_n        = cosn * res_n
 c
 c       Compute and apply the rotation for the last element
         call drotg(res_n, res_n_plus1, cosn, sinn)
-c       Save rotations and vector for seeding
-        if(id.eq.0) then
-c          write(luout,*) "Saving data"
-          stat = rtdb_parallel(.false.)
-          if(.not.rtdb_put(rtdb,'seed:sin'//CHAR(niter)//dir,
-     $                     mt_dbl, 1,sinn))
-     $      call errquit('put sinn failed', niter, RTDB_ERR)
-          if(.not.rtdb_put(rtdb,'seed:cos'//CHAR(niter)//dir,
-     $                     mt_dbl, 1,cosn))
-     $      call errquit('put cosn failed', niter, RTDB_ERR)
-          if(.not.rtdb_put(rtdb,'seed:scp'//CHAR(niter)//dir,
-     $                     mt_dbl, 1,scpn))
-     $      call errquit('put scp failed', niter, RTDB_ERR)
-          call ga_get(g_work(3), 1, nlen, 1, 1, dbl_mb(k_seed), 1)
-          if(.not.rtdb_put(rtdb,'seed:v'//CHAR(niter)//dir,
-     $                     mt_dbl, nlen, dbl_mb(k_seed)))
-     $      call errquit('put v failed', niter, RTDB_ERR)
-c        call ga_distribution(g_work(3), id, ilo, ihi, jlo, jhi)
-c        call ga_access(g_work(3), ilo, ihi, jlo, jhi, k_seed, ld)
-c        if(.not.rtdb_put(rtdb,'seed:v'//CHAR(niter)//dir,
-c     $                   mt_dbl, nlen, dbl_mb(k_seed)))
-c     $      call errquit('put v failed', niter, RTDB_ERR)
-c        call ga_release(g_work(3), ilo, ihi, jlo, jhi)
-          stat = rtdb_parallel(.true.)
-c          write(luout,*) "Data saved"
-        end if
-        call ga_sync()
 c
 c       Apply the new rotation to the right-hand side vector
         rhs_n_plus1 = -sinn * rhs_n
@@ -224,30 +188,6 @@ c
 c       Compute the new QMR iterate, then scale the search direction
         scs  = scpn / res_n
         dtmp = scs * rhs_n
-c
-c       Save search direction for seeding
-        if(id.eq.0) then
-c          write(luout,*) "Saving data 2"
-          stat = rtdb_parallel(.false.)
-          if(.not.rtdb_put(rtdb,'seed:scs'//CHAR(niter)//dir,
-     $                   mt_dbl, 1, scs))
-     $      call errquit('put scs failed', niter, RTDB_ERR)
-          
-          call ga_get(g_work(5), 1, nlen, 1, 1, dbl_mb(k_seed), 1)
-          if(.not.rtdb_put(rtdb,'seed:s'//CHAR(niter)//dir,
-     $                     mt_dbl, nlen, dbl_mb(k_seed)))
-     $      call errquit('put s failed', niter, RTDB_ERR)
-c          write(luout,*) "Data saved 2"
-c          call util_flush(luout)
-          stat = rtdb_parallel(.true.)
-        end if
-        call ga_sync()
-c        call ga_access(g_work(5), 1, nlen, 1, 1, k_seed, ld)
-c        if(.not.rtdb_put(rtdb,'seed:s'//CHAR(niter)//dir,
-c     $                   mt_dbl, nlen, dbl_mb(k_seed)))
-c     $      call errquit('put s failed', niter, RTDB_ERR)
-c        call ga_release(g_work(5), 1, nlen, 1, 1)
-c
 c       g_work(:,1) = g_work(:,1) + dtmp * g_work(:,5)
         call ga_add(ONE, g_work(1), dtmp, g_work(5), g_work(1))
         if((ABS(scs) >= max_tol) .or. (ABS(scs) <= min_tol)) then
@@ -255,7 +195,6 @@ c         g_work(:,5) = scs * g_work(:,5)
           call ga_scale(g_work(5), scs)
           scs = ONE
         end if
-c        write(luout,*) "updated iterate"
 c
 c       Compute the residual norm upper bound
 c       If the scaled upper bound is within one order of magnitude of
@@ -274,7 +213,6 @@ c          g_work(:,6) = g_work(:,2) - g_work(:,6)
            res_nrm = SQRT(ga_ddot(g_work(6), g_work(6))) / res_0
            call ga_sync()
            nrm_check = res_nrm
-           if(ldebug) write(LuOut,*) "Res_nrm: ", res_nrm
         else
           if(ldebug) then
             write(LuOut,*) "Res_nrm_upper_bound:", res_nrm_upper_bound
@@ -308,17 +246,9 @@ c
 c     Put proper values into output variables
       if (niter > maxiter) ierr = 3
       tol = res_nrm
-      call ga_get(g_work(1), 1, nLen, 1, 1, unknowns, 1)
-c
-c     Save number of iterations for projection
-      if(.not.rtdb_put(rtdb,'seed:k'//dir, mt_int, 1, niter))
-     $  call errquit('put seed:k failed', 1, RTDB_ERR)
-c
-c     Destroy memory
-      if(id.eq.0) then
-        stat = ma_pop_stack(l_seed)
-      end if
-      call ga_sync()
+c      call ga_get(g_work(1), 1, nLen, 1, 1, unknowns, 1)
+      call ga_copy(g_work(1), g_fld)
+c      call ga_print(g_fld)
       if(id.eq.0.and.ldebug) write(LuOut,*)
-     $   "End seed QMR Routine"
-      end subroutine qmr_seed_real
+     $   "End QMR Routine"
+      end subroutine qmr_real2

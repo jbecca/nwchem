@@ -1,5 +1,6 @@
       subroutine qmr_real(rtdb, nlen, g_work, niter, tol, ierr,
-     $                    unknowns, matvec, xyz, ldebug)
+     $                 unknowns, matvec, xyz, ldebug, 
+     $                  g_dim_diag_real, nDIM, nDIMTypes)
 c
 c     Fancy QMR algorithm.  Will document later.
 c      use constants
@@ -13,6 +14,8 @@ c      use constants
 #include "global.fh"
 #include "testutil.fh"
 #include "dimqm_constants.fh"
+#include "tcgmsg.fh"
+#include "msgids.fh"
 c
 c     Input Variables
       integer rtdb
@@ -21,11 +24,13 @@ c     Input Variables
       integer niter
       double precision tol
       integer ierr
-      integer g_unknowns
+c      integer g_unknowns
       external matvec
-      double precision xyz(3,*)
+      double precision xyz(3,nDIM)
       double precision unknowns(nlen)
       logical ldebug
+      integer g_dim_diag_real
+      integer nDIM, nDIMTypes
 c
 c     Local variables
       integer maxiter
@@ -70,15 +75,22 @@ c     Zero work arrays
       do i = 1, 6
         call ga_zero(g_work(i))
       end do
+      if (ldebug.and.id.eq.0) write(luout,*) 'g_work zerod'
 c
 c     Initalize by copying input field to work 2 and 3
+      call ga_init_fence()
       call ga_put(g_work(2), 1, nLen, 1, 1, unknowns, 1)
+      call ga_fence()
       call ga_copy(g_work(2), g_work(3))
       call ga_sync()
+      if (ldebug.and.id.eq.0) 
+     $      write(luout,*) 'input field added to work 2 and 3'
 c
 c     Initial residual
 c      res_0 = dnrm2(nlen,unknowns,1)
       res_0 = SQRT(ga_ddot(g_work(3), g_work(3)))
+c
+      if (ldebug.and.id.eq.0) write(luout,*) 'initial residual calc.'
 c
 c     If already converged, exit here
       if((tol >= ONE) .or. (res_0 <= tol)) then
@@ -100,10 +112,12 @@ c     Initialize the variables
       omega     = ONE
       rhs_n     = omega * res_0
       omegamax  = ONE / omega
+      if (ldebug.and.id.eq.0) write(luout,*) 'variables initialized'
 c
 c     Begin the algorithm
       do niter = 1, maxiter
         time = util_timer()
+        if (ldebug.and.id.eq.0) write(luout,*) 'iterations begun'
 c
 c       Check if E_n is nonsingular
         if(e_n == ZERO) then
@@ -116,8 +130,10 @@ c       Check for invariant subspaces, and scale the vectors if needed.
         ierr = 0
         if (scpn * scv < nrm_tol) ierr = 5
         if (ierr /= 0) return ! A-invarient subspace
+c        write(luout,*)'scv',scv
 c
         d_n = ga_ddot(g_work(3), g_work(3)) / (scv**2)
+c        call ga_print(g_work(3))
         if((scv >= max_tol) .or. (scv <= min_tol)) then
           dtmp = ONE / scv
           call ga_scale(g_work(3), dtmp)
@@ -137,8 +153,17 @@ c       Check if D_n is nonsingular
           return
         end if
 c
+        if(id.eq.0.and.ldebug) write(luout,*)'gwork4-1'
+         call ga_print(g_work(4))
+        if(id.eq.0.and.ldebug) write(luout,*)'gwork6-1'
+         call ga_print(g_work(6))
 c       Multiply current residual by the matrix
-        call matvec(rtdb, nlen, g_work(4), g_work(6), xyz, ldebug)
+        call matvec(rtdb, nlen, g_work(4), g_work(6), 
+     $               xyz, ldebug, g_dim_diag_real, nDIM, nDIMTypes)
+        if(id.eq.0.and.ldebug) write(luout,*)'gwork4-2'
+         call ga_print(g_work(4))
+        if(id.eq.0.and.ldebug) write(luout,*)'gwork6-2'
+         call ga_print(g_work(6))
 c
 c       Compute p_n^T A p_n
         e_n = ga_ddot(g_work(4), g_work(6)) * scpn**2
@@ -180,6 +205,8 @@ c       Compute the new QMR iterate, then scale the search direction
         dtmp = scs * rhs_n
 c       g_work(:,1) = g_work(:,1) + dtmp * g_work(:,5)
         call ga_add(ONE, g_work(1), dtmp, g_work(5), g_work(1))
+        if(id.eq.0.and.ldebug) write(luout,*)'gwork1-1'
+         call ga_print(g_work(1))
         if((ABS(scs) >= max_tol) .or. (ABS(scs) <= min_tol)) then
 c         g_work(:,5) = scs * g_work(:,5)
           call ga_scale(g_work(5), scs)
@@ -195,21 +222,24 @@ c       the targer convergence norm, compute the true residual norm.
         nrm_check = res_nrm_upper_bound
         if((res_nrm_upper_bound/tol <= TEN).or.(niter >= maxiter)) then
 c         Multiply the current residual by the matrix
-           call matvec(rtdb, nlen, g_work(1), g_work(6), xyz, ldebug)
+           call matvec(rtdb, nlen, g_work(1), g_work(6), 
+     $                  xyz, ldebug, g_dim_diag_real, nDIM, nDIMTypes)
 c          g_work(:,6) = g_work(:,2) - g_work(:,6)
+        if(id.eq.0.and.ldebug) write(luout,*)'gwork1-2'
+         call ga_print(g_work(1))
            call ga_add(ONE, g_work(2), -ONE, g_work(6), g_work(6))
            call ga_sync()
            res_nrm = SQRT(ga_ddot(g_work(6), g_work(6))) / res_0
            call ga_sync()
            nrm_check = res_nrm
-           if(id.eq.0.and.ldebug) write(LuOut,*) "Res_nrm: ", res_nrm
+           if(ldebug.and.id.eq.0) write(LuOut,*) "Res_nrm: ", res_nrm
         else
-          if(id.eq.0.and.ldebug) then
+          if(ldebug.and.id.eq.0) then
             write(LuOut,*) "Res_nrm_upper_bound:", res_nrm_upper_bound
           end if
         end if
         time = util_timer() - time
-        if(id.eq.0.and.ldebug) then
+        if(ldebug.and.id.eq.0) then
           write(LuOut,*) "Iteration", niter
           write(LuOut,*) "Time (s):", time
           call util_flush(LuOut)
@@ -237,6 +267,8 @@ c     Put proper values into output variables
       if (niter > maxiter) ierr = 3
       tol = res_nrm
       call ga_get(g_work(1), 1, nLen, 1, 1, unknowns, 1)
+      if(id.eq.0) write(luout,*)'unknowns',unknowns
+      call ga_print(g_work(1))
       if(id.eq.0.and.ldebug) write(LuOut,*)
      $   "End QMR Routine"
       end subroutine qmr_real

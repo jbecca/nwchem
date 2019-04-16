@@ -16,7 +16,8 @@
      &                debug,       ! in : logical var for debugging
      &                g_dipel_i,
      &                omega,
-     &                g_temp)      ! in : scratch GA array
+     &                g_temp,      ! in : scratch GA array
+     &                rtdb)      ! in : scratch GA array
 c
 c Author : Fredy W. Aquino
 c Date   : 03-15-12
@@ -41,7 +42,7 @@ c
 #include "util.fh"
       double precision AorBre, ! OUTPUT
      &                 AorBim  ! OUTPUT 
-      integer idir,iresp,ndir,
+      integer idir,iresp,ndir,rtdb,
      &        nbf,nocc,
      &        caseAO,ind1,ind2
       integer alo(3),ahi(3), 
@@ -64,8 +65,8 @@ c  DIM/QM stuff
       use_dimqm=util_module_avail("dimqm")
 
       if (use_dimqm) then
-         call dimqm_used(ldimqm)
-         call dimqm_getlclfld(lclfld)
+         call dimqm_used(rtdb,ldimqm)
+         call dimqm_getlclfld(rtdb,lclfld)
       else
          ldimqm   =  .false.
          lclfld   =  .false.

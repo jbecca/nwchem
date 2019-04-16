@@ -4,7 +4,7 @@
      $                            cetobfr, ibf_ao, bas_cent_info,
      $                            bas_cset_info, docset, rchi_atom,
      $                            g_vdim, nmat, do_scf, do_cpks_l, l3d,
-     $                            ipm, imag, dimxyz, muind)
+     $                            ipm, imag, dimxyz, muind, nDIM, rtdb)
 c
 c$Id: dim_grid_quadv0b.F 19821 2010-12-14 07:46:49Z d3y133 $
 c
@@ -20,7 +20,6 @@ c
 #include "grid_sic.fh"
 #include "dftps.fh"
 #include "geom.fh"
-#include "dimqm.fh"
 c
 c   Input Variables
       integer ictr_buf ! ctr of grid
@@ -54,6 +53,8 @@ c   Input Variables
       integer imag
       double precision dimxyz(3, nDIM) ! DIM Coordinates
       double precision muind(3, nDIM, nmat) ! DIM Coordinates
+      integer nDIM
+      integer rtdb
 c      
 c   Local Variables 
       integer nbf_ao_mxnbf_ce2, mbf_ao, npol, ncontrset, maxdbas
@@ -68,10 +69,14 @@ c   Local Variables
       logical grid_sicinit,grid_sicend
       external grid_sicinit,grid_sicend
       double precision acc_xc_gauss
-      integer lemat,iemat,lfmat,ifmat,k_scr,l_scr
+      integer lemat,iemat,lfmat,ifmat,k_scr,l_scr, id
       logical do_2nd
       logical stat
       logical dprint
+      logical ldebug
+      
+      ldebug = .true.
+      id = ga_nodeid()
 c
       npol = (ipol*(ipol+1))/2
       acc_ao_gauss = dble(iaoacc)
@@ -127,15 +132,23 @@ c
       call util_rmsatbf(nqpts, natoms,iniz,ifin,
      ,     dbl_mb(ichi_ao),rchi_atom)
 
+c ---------------------
       if(nqpts.eq.0) goto 2010
 
 c
 c     Evaluate the DIM potential
 c     Set up pointer to the SCF density for the CPKS LHS case.
 c
-      call dim_eval_fnl(rho, nqpts, qwght,
+c----- original, worked for all cases ------
+c      call dim_eval_fnl(rho, nqpts, qwght,
+c     &     dimxyz, qxyz, 
+c     $     nmat, ipm, imag, muind,nDIM, rtdb)
+c----- orig
+c----- new, gs only
+      call dim_eval_fnl2(rho, nqpts, qwght,
      &     dimxyz, qxyz, 
-     $     nmat, ipm, imag, muind)
+     $     muind,nDIM, rtdb)
+c----- new, gs only
 c       rho(1:nqpts*nmat) = 0.0d0
 c
 c   Transform the potential from over the quadrature points to the shape of the Fock Matrix

@@ -309,7 +309,8 @@ c       ------------------------------------------------------
      &        dbgsub,            ! in : logical var for debugging
      &        g_dipel_i,
      &        omega,
-     &        g_temp)           ! in : scratch GA array
+     &        g_temp,           ! in : scratch GA array
+     &        rtdb)           ! in : scratch GA array
 
           end do
         end do
@@ -353,7 +354,8 @@ c       --------------------------------------
      &          dbgsub,          ! in : logical var for debugging
      &          g_dipel_i,
      &          omega,
-     &          g_temp)         ! in : scratch GA array
+     &          g_temp,         ! in : scratch GA array
+     &          rtdb)         ! in : scratch GA array
 
               if (debug) write (luout,*)
      &          'beta: C(E) S(ket1) C(0) complete'
@@ -396,7 +398,8 @@ c       --------------------------------------
      &        dbgsub,           ! in : logical var for debugging
      &        g_dipel_i,
      &        omega,
-     &        g_temp)           ! in : scratch GA array 
+     &        g_temp,           ! in : scratch GA array 
+     &        rtdb)           ! in : scratch GA array 
             
           enddo                 ! iresp = 1,3
           
@@ -425,7 +428,8 @@ c         ------------------------------------------------
      &          dbgsub,          ! in : logical var for debugging
      &          g_dipel_i,
      &          omega,
-     &          g_temp)         ! in : scratch GA array 
+     &          g_temp,         ! in : scratch GA array 
+     &          rtdb)         ! in : scratch GA array 
 
    
             enddo               ! iresp = 1,6

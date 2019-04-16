@@ -356,17 +356,17 @@ c     Get the cosmo contribution
       endif
 c     DIM/QM JEM
       if (use_dimqm) then
-         call dimqm_used(ldimqm)
-         call dimqm_getlrsp(lrsp)
+         call dimqm_used(rtdb,ldimqm)
+         call dimqm_getlrsp(rtdb,lrsp)
       else
          ldimqm=.false.
          lrsp=.false.
       endif
       if (ldimqm .and. lrsp) then
         lfirst = .true.
-        call dimqm_setlfirst(lfirst)
+        call dimqm_setlfirst(rtdb,lfirst)
         dimqm_go = .false.
-        call dimqm_setgo(dimqm_go)
+        call dimqm_setgo(rtdb,dimqm_go)
       end if
 
       if(scftype .eq. 'UHF')then
@@ -489,7 +489,7 @@ c        to the rtdb at some time (e.g. in aoresponse)
            enddo ! end-loop-ipm
           endif
 c  jbecca START -- Need to create the int. mat. here for UHF
-         if (ldimqm .and. lrsp) call dimqm_prep(rtdb, omega)
+C         if (ldimqm .and. lrsp) call dimqm_prep(rtdb, omega)
 c  jbecca END
 
 
@@ -663,7 +663,7 @@ c        in the preconditioner.
 c        g_grad is the constant rhs vector
 c
 c       DIM/QM JEM
-         if (ldimqm .and. lrsp) call dimqm_prep(rtdb, omega)
+c         if (ldimqm .and. lrsp) call dimqm_prep(rtdb, omega)
 
          if (.not.lifetime) then
            if (debug) write (6,*) 'calling ga_lkain_2cpl3'
@@ -817,9 +817,9 @@ c ======== writing (g_b,g_rhs_sol) ======== END
          call rohf_tidy
       endif
       call scf_tidy(rtdb)
-      if (ldimqm .and. lrsp) then
-        call dimqm_tidy()
-      endif
+c      if (ldimqm .and. lrsp) then
+c        call dimqm_tidy()
+c      endif
       return
       end
 

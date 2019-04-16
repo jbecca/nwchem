@@ -1,11 +1,14 @@
-      subroutine dimqm_fldpot(d_xyz, q_xyz, q_chrg, fld)
+      subroutine dimqm_fldpot(rtdb,d_xyz, q_xyz, q_chrg, fld)
 c      use err_func
       implicit none
 #include "stdio.fh"
 #include "dimqm_constants.fh"
-#include "dimqm.fh"
+#include "rtdb.fh"
+#include "errquit.fh"
+#include "mafdecls.fh"
 c
 c      Input Variables
+      integer rtdb
       double precision d_xyz(3)
       double precision q_xyz(3)
       double precision q_chrg
@@ -15,6 +18,8 @@ c      Local Variables
       double precision dist, dist3
       double precision screen
       double precision screen_fld
+      integer scrnType
+      double precision scrnFactor
 c
 c      Distance between points
 c     
@@ -27,6 +32,14 @@ c      write(luout,*) "R:",r
 c
 c      Determine screening factor based off screening type
 c      
+      if (.not. rtdb_get(rtdb, 'dimqm:scrnType', mt_int, 1, scrnType))
+     $  call errquit('dimqm_fldpot: scrnType get failed', 1, RTDB_ERR)
+c  only check for screening factor if screening is turned on
+c      write(luout,*)'screen type',scrnType
+      if (scrnType.ne.NOSCRN) then
+      if (.not.rtdb_get(rtdb,'dimqm:scrnFactor',mt_dbl,1, scrnFactor))
+     $  call errquit('dimqm_fldpot:scrnFactor get failed', 1, RTDB_ERR)
+      endif
       screen_fld = ONE
       if(scrnType == ERFSCRN) then
         screen     = erf(scrnFactor*dist)

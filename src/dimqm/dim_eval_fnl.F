@@ -1,7 +1,7 @@
 c
 c
       Subroutine dim_eval_fnl(ptnl,nq,qwght,xyz,qxyz,npert,
-     $                        ipm, imag, muind)
+     $                        ipm, imag, muind, nDIM, rtdb)
 c
       implicit none
 c
@@ -9,7 +9,6 @@ c
 #include "rtdb.fh"
 #include "mafdecls.fh"
 #include "dimqm_constants.fh"
-#include "dimqm.fh"
 #include "errquit.fh"
 #include "global.fh"
 #include "tcgmsg.fh"
@@ -24,12 +23,15 @@ c   Input Variables
       integer ipm                      
       integer imag
       double precision muind(3, nDIM, npert)  ! Array that holds induced dipoles.  Structured as (component, atom, perturbation)
+      integer nDIM
+      integer rtdb
 c
 c   Local Variables
       integer jj, n, i, idir, id
       double precision r(3), dist, dist3
       double precision screen_mu, screen
-      double precision util_erf
+      double precision util_erf, scrnFactor
+      integer scrnType
 c      character*(1) direction(3)
 c      character*(1) dpm(2)
 c      character*(1) dri(2)
@@ -38,8 +40,11 @@ c      data dpm /'+', '-'/
 c      data dri /'r', 'i'/
 c
       id = ga_nodeid()
-c      write(luout,*) "id:", npert, ipm, imag, nq
+      if (id.eq.0) write(luout,*) "npert ", npert, "ipm ", ipm
 c
+      if (.not. rtdb_get(rtdb, 'dimqm:scrnType', mt_int, 1, scrnType))
+     $   call errquit('dim_eval_fnl: scrnType get failed',1,RTDB_ERR)
+
 c   Zero potential array
       call dfill(nq*npert, 0.d0, ptnl, 1)
 c      muind = ZERO
@@ -65,12 +70,16 @@ c        endif
 c        end if
 c       
 c        write(luout,*) "muind", id, muind
+        if (scrnType .ne. NOSCRN) then
+        if (.not. rtdb_get(rtdb,'dimqm:scrnFactor',mt_dbl,1,scrnFactor))
+     $   call errquit('dim_eval_fnl:get scrnFactor failed',1,RTDB_ERR)
+        endif
         do n = 1, nq ! Loop over quadrature points
           do i = 1, nDIM ! Loop over DIM atoms
 c
 c           Distance between two points
             r(:) = xyz(:,i) - qxyz(:,n) 
-            dist = SQRT(DOT_PRODUCT(r, r))
+            dist = SQRT((r(1)**2 + r(2)**2 + r(3)**2))
 c
 c           Screening
             screen_mu = ONE

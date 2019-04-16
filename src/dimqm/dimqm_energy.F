@@ -1,11 +1,13 @@
-      subroutine dimqm_energy(nAtoms, muind, eqme, eqmn)
+      subroutine dimqm_energy(rtdb, nAtoms, muind, eqme, eqmn)
       implicit none
 #include "stdio.fh"
 #include "util.fh"
 #include "dimqm_constants.fh"
 #include "global.fh"
+#include "rtdb.fh"
+#include "mafdecls.fh"
+#include "errquit.fh"
 c  jbecca: START
-#include "dimqm.fh"
 c  jbecca: END
       integer nAtoms
       double precision muind(3,nAtoms)
@@ -18,6 +20,9 @@ c    Local Variables
       double precision energy
       character*50 d
       character*50 dd
+      integer rtdb
+      logical lefield
+      double precision finiteFieldX, finiteFieldY, finiteFieldZ
       
       if(ga_nodeid().ne.0) return
 c
@@ -30,7 +35,14 @@ c    Calculate the DIM energy
       en_dipole_el = -HALF * SUM(muind * eqme)
       en_dipole_nuc= -HALF * SUM(muind * eqmn)
       efld_int  =  ZERO
+      call dimqm_getlefield(rtdb, lefield)
       if (lefield) then
+         if(.not.rtdb_get(rtdb,'dimqm:finiteFieldX',mt_dbl,
+     $    1,finiteFieldX)) call errquit('get fieldX failed',1,RTDB_ERR)
+         if(.not.rtdb_get(rtdb,'dimqm:finiteFieldY',mt_dbl,
+     $    1,finiteFieldY)) call errquit('get fieldY failed',1,RTDB_ERR)
+         if(.not.rtdb_get(rtdb,'dimqm:finiteFieldZ',mt_dbl,
+     $    1,finiteFieldZ)) call errquit('get fieldZ failed',1,RTDB_ERR)
          efld_int  =  SUM(muind(1,:) * finiteFieldX)
      $             +  SUM(muind(2,:) * finiteFieldY)
      $             +  SUM(muind(3,:) * finiteFieldZ)

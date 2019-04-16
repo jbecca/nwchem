@@ -2,7 +2,7 @@
 c
       implicit none
       integer rtdb
-      integer g_vdim(*)
+      integer g_vdim
 
       call dim_grid_quadv0_gen(rtdb, g_vdim, 1, 1, .false., 0, 1)
 
@@ -43,7 +43,6 @@ c
 #include "rtdb.fh"
 #include "dft2drv.fh"
 #include "steric.fh"
-#include "dimqm.fh"
 c
       logical rtdb_status       
       logical grid_reopen
@@ -93,8 +92,13 @@ c
       data direction /'x', 'y', 'z'/
       data dpm /'+', '-'/
       data dri /'r', 'i'/
+      integer nDIM
+      logical ldebug
 
 c
+      call dimqm_getnDIM(rtdb, nDIM)
+c      call dimqm_get_debug(rtdb, ldebug)
+      ldebug = .true.
       me = ga_nodeid()
       nproc = ga_nnodes()
       oprint = ldebug 
@@ -172,7 +176,7 @@ c
      &                        Dbl_MB(ixyz), Dbl_MB(icharge)))
      &   call errquit('grid_den: geom_cart_get failed',74, GEOM_ERR)
 c
-c      write(*,*)' Coordinates from grid_den.F '
+      write(*,*)' Coordinates from grid_den.F '
 c      call output(dbl_mb(ixyz), 1, 3, 1, nctrs, 3, nctrs, 1)
 c     &                    
 c
@@ -287,19 +291,19 @@ c     Allocate and read in induced dipoles
       if(nmat > 1) then ! only 1 perturbation for ground state, 3 for response
         do idir = 1, nmat
           if(ipm .gt. 0) then ! FD Response (real and imaginary, +/-)
-            if(.not.rtdb_get(dimqm_rtdb,'dimqm:muind_'//direction(idir)
+            if(.not.rtdb_get(rtdb,'dimqm:muind_'//direction(idir)
      $                       //'_'//dri(imag)//dpm(ipm), mt_dbl, 3*nDIM,
      $                       dbl_mb(k_muind+i3*(idir-1))))
      $       call errquit('get perturbed +/- dipoles failed',6,RTDB_ERR)
           else ! Static response
-            if(.not.rtdb_get(dimqm_rtdb,'dimqm:muind_'//direction(idir),
+            if(.not.rtdb_get(rtdb,'dimqm:muind_'//direction(idir),
      $                       mt_dbl, 3*nDIM,
      $                       dbl_mb(k_muind+i3*(idir-1))))
      $       call errquit('get perturbed xyz dipoles failed',6,RTDB_ERR)
           end if
         end do
       else ! Ground state
-        if(.not.rtdb_get(dimqm_rtdb, 'dimqm:muind', mt_dbl, 3*nDIM,
+        if(.not.rtdb_get(rtdb, 'dimqm:muind', mt_dbl, 3*nDIM,
      $                   dbl_mb(k_muind)))
      $    call errquit('get perturbed dipoles failed', 2112, RTDB_ERR)
       endif
@@ -328,7 +332,7 @@ c
      ,        dbl_mb(irchi_atom), g_vdim,
      ,        nmat, do_scf, do_cpks_l,
      ,        l3d, ipm, imag, dbl_mb(k_dimxyz),
-     $        dbl_mb(k_muind))
+     $        dbl_mb(k_muind), nDIM, rtdb)
 c     
       
       if (.not.ma_chop_stack(lqxyz))

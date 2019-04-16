@@ -267,9 +267,9 @@ c     get the correct magnitude of the result back
         call nga_scale_patch(g_rhs(ipm),blo,bhi,-4.0d0)
 c       DIM/QM JEM
       if (use_dimqm) then
-         call dimqm_used(ldimqm)
-         call dimqm_getlrsp(lrsp)
-         call dimqm_getlclfld(lclfld)
+         call dimqm_used(rtdb,ldimqm)
+         call dimqm_getlrsp(rtdb,lrsp)
+         call dimqm_getlclfld(rtdb,lclfld)
       else
          ldimqm=.false.
          lrsp=.false.

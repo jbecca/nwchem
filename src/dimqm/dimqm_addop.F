@@ -1,7 +1,7 @@
-      subroutine dimqm_addop(g_x_r, g_x_i, g_Ax_r, g_Ax_i,
-     $                       ncomp, limag, lifetime)
+      subroutine dimqm_addop(rtdb,g_x_r, g_x_i, g_Ax_r, g_Ax_i,
+     $                       ncomp, limag, lifetime, nDIM)
 c
-c     Author: Justin Moore
+c     Author: Jeff Becca
 c
 c     Called from: rohf_hessv3.F rohf_hessv3_ext.F 
 c
@@ -20,12 +20,12 @@ c
 #include "mafdecls.fh"
 #include "global.fh"
 #include "dimqm_constants.fh"
-#include "dimqm.fh"
 #include "geom.fh"
 #include "crohf.fh"
 #include "cscf.fh"
 c
 c     Input Variables
+      integer rtdb
       integer g_x_r(2)     ! A matrix handle (real)      [IN]
       integer g_x_i(2)     ! A matrix handle (imaginary) [IN]
       integer g_Ax_r(2)    ! F matrix handle (real)      [IN/OUT]
@@ -33,6 +33,7 @@ c     Input Variables
       integer ncomp        ! num of components (+/-)     [IN]
       logical limag        ! Imaginary perturbation?     [IN]
       logical lifetime     ! Damping or no damping
+      integer nDIM
 c
 c     Local variables
       integer g_tmp1, g_tmp2, g_dcv
@@ -73,14 +74,19 @@ c      integer l_fld, k_fld
       logical firsttime
 c      double precision screen(nDIM)
       double precision dimErr(3,2,2)
-      double precision calcErr
+      double precision calcErr, dimtol, dimtol0, dimtolxyz(6)
       external calcErr
       integer id
+      logical dimqm_noseed, dimqm_seeded
+      logical lfirst
+      logical ldebug
 c
       id = ga_nodeid()
+      call dimqm_get_debug(rtdb, ldebug)
       if (ldebug .and. id .eq. 0) then
         write(luout,*) "Start dimqm_addop"
       end if
+      call dimqm_getlfirst(rtdb, lfirst)
       nvir = nmo - nclosed - nopen
       i3 = nDIM * 3
       g_tmp1 = ga_create_atom_blocked(geom, basis, 'dim_addop: tmp1')
@@ -151,12 +157,14 @@ c     &     0,GA_ERR)
         write(luout,*) "End allocation"
       end if
 c
+      if (.not.rtdb_get(rtdb, 'dimqm:noseed', mt_log, 1, dimqm_noseed))
+     $   call errquit('dim_addop: noseed get failed', 1, RTDB_ERR)
 c     Pull in residual and check seeding status
       if (.not.lfirst) then
-        if (.not.rtdb_get(dimqm_rtdb, 'lkain:rmax', mt_dbl, 1, rmax))
+        if (.not.rtdb_get(rtdb, 'lkain:rmax', mt_dbl, 1, rmax))
      $    call errquit('dimqm_addop: rmax get failed', 1, RTDB_ERR)
       
-        call dimqm_check_dipoles(1.0d0, rmax)
+        call dimqm_check_dipoles(rtdb, 1.0d0, rmax)
       end if
 
 c
@@ -291,7 +299,7 @@ c
 c      if(.not.ma_push_get(mt_dbl,i3,'dimrsp:xyz',l_dimxyz,k_dimxyz))
 c     $  call errquit('malloc dimrsp:xyz failed',1,MA_ERR)
 c
-      if(.not.rtdb_get(dimqm_rtdb,'dimpar:coords', mt_dbl, i3, dimxyz))
+      if(.not.rtdb_get(rtdb,'dimpar:coords', mt_dbl, i3, dimxyz))
      $  call errquit('get dimpar:coords failed', 1, RTDB_ERR)
 c
       g_dens_comp_r = ga_create_atom_blocked(geom,basis,
@@ -302,7 +310,7 @@ c
       end if
 c
 c
-c      call dimqm_screening(dimqm_rtdb, geom, basis, dbl_mb(k_dimxyz),
+c      call dimqm_screening(rtdb, geom, basis, dbl_mb(k_dimxyz),
 c     $                       screen)
 c      screen = ONE
 c
@@ -328,7 +336,7 @@ c       Copy current perturbation into g_dens_comp
           muind = ZERO
           fld = ZERO
           firsttime = .false.
-          if(.not.rtdb_get(dimqm_rtdb,
+          if(.not.rtdb_get(rtdb,
      $                'dimqm:muind_'//direction(n)//'_r'//pm(ipm),
      $                              mt_dbl, i3, muold(:,:,1))) then
             if(id.eq.0 .and. ldebug) 
@@ -336,6 +344,7 @@ c       Copy current perturbation into g_dens_comp
             muold = ZERO
             firsttime = .true.
             dimqm_seeded = .false.
+            call dimqm_put_seeded(rtdb, dimqm_seeded)
 c            xyz_seeded(3*(n-1)+ipm) = .false.
             if(dimtol0 < 1.0d-4 .and. .not. dimqm_noseed) then
               dimtolxyz(ipm*3 - 1 + n) = 1.0d-4
@@ -346,7 +355,7 @@ c            xyz_seeded(3*(n-1)+ipm) = .false.
               end if
             end if
           else
-            if(.not.rtdb_get(dimqm_rtdb,
+            if(.not.rtdb_get(rtdb,
      $                'dimqm:muind_'//direction(n)//'_i'//pm(ipm),
      $                           mt_dbl, i3, muold(:,:,2)))
      $          call errquit('get dimqm:muold failed',1,RTDB_ERR)
@@ -361,20 +370,20 @@ c          call dfill(i3*2, ZERO, dbl_mb(k_fld), 1)
 c
 c       Real portion of E-Field
 c        write(luout,*) "REAL"
-          call dimqm_EqmE(dimqm_rtdb, g_dens_comp_r, geom, basis,
-     $               fld(:,:,1), dimxyz)
+          call dimqm_EqmE(rtdb, g_dens_comp_r, geom, basis,
+     $               fld(:,:,1), dimxyz, nDIM)
 c
 c       Imaginary portion of E-Field
 c        write(luout,*) "IMAG"
 c        call ga_print(g_dens_comp_i)
           if (lifetime) then
-            call dimqm_EqmE(dimqm_rtdb, g_dens_comp_i, geom, basis,
-     $                      fld(:,:,2), dimxyz)
+            call dimqm_EqmE(rtdb, g_dens_comp_i, geom, basis,
+     $                      fld(:,:,2), dimxyz, nDIM)
           end if
 c
 c       Solve for induced dipoles
-          call dimqm_f2d(dimqm_rtdb, fld, muind, muold, dimxyz, 2,
-     $                   direction(n), pm(ipm),.false.)
+          call dimqm_f2d(rtdb, fld, muind, muold, dimxyz, 2,
+     $                   direction(n), nDIM)
 c
 c         Write induced dipoles to RTDB
           dx_r = SUM(muind(1,:,1))
@@ -411,11 +420,11 @@ c     $                     " dir as seed"
 c            write(luout,*)"Reverting tolerance back to", dimtol0
 c            dimtolxyz(ipm*3 - 1 + n) = dimtol0
 c          end if
-          if(.not.rtdb_put(dimqm_rtdb,
+          if(.not.rtdb_put(rtdb,
      $                'dimqm:muind_'//direction(n)//'_r'//pm(ipm),
      $                              mt_dbl, i3, muind(:,:,1)))
      $        call errquit('put dimqm:muind_p failed',1,RTDB_ERR)
-          if(.not.rtdb_put(dimqm_rtdb,
+          if(.not.rtdb_put(rtdb,
      $                'dimqm:muind_'//direction(n)//'_i'//pm(ipm),
      $                           mt_dbl, i3, muind(:,:,2)))
      $        call errquit('put dimqm:muind_p failed',1,RTDB_ERR)
@@ -461,7 +470,7 @@ c   Real +
      &                        g_dim_r(1)))
      &   call errquit('addop: could not allocate g_dim_r+',1,GA_ERR)
       call ga_zero(g_dim_r(1)) 
-      call fock_dim(geom, nbf, basis, 3, g_dim_r(1), 1, 1)
+      call fock_dim(rtdb,geom, nbf, basis, 3, g_dim_r(1), 1, 1)
       call ga_symmetrize(g_dim_r(1))
 c
 c   Real -
@@ -469,7 +478,7 @@ c   Real -
      &                        g_dim_r(2)))
      &   call errquit('addop: could not allocate g_dim_r-',1,GA_ERR)
       call ga_zero(g_dim_r(2))
-      call fock_dim(geom, nbf, basis, 3, g_dim_r(2), 2, 1)
+      call fock_dim(rtdb,geom, nbf, basis, 3, g_dim_r(2), 2, 1)
       call ga_antisymmetrize(g_dim_r(2))
       if (lifetime) then
 c
@@ -478,7 +487,7 @@ c   Imaginary +
      &                        g_dim_i(1)))
      &   call errquit('addop: could not allocate g_dim_i+',1,GA_ERR)
       call ga_zero(g_dim_i(1))
-      call fock_dim(geom, nbf, basis, 3, g_dim_i(1), 1, 2)
+      call fock_dim(rtdb,geom, nbf, basis, 3, g_dim_i(1), 1, 2)
       call ga_symmetrize(g_dim_i(1))
 c
 c   Imaginary -
@@ -486,7 +495,7 @@ c   Imaginary -
      &                        g_dim_i(2)))
      &   call errquit('addop: could not allocate g_dim_i-',1,GA_ERR)
       call ga_zero(g_dim_i(2))
-      call fock_dim(geom, nbf, basis, 3, g_dim_i(2), 2, 2)
+      call fock_dim(rtdb,geom, nbf, basis, 3, g_dim_i(2), 2, 2)
       call ga_antisymmetrize(g_dim_i(2))
       end if
 c
@@ -613,6 +622,7 @@ c   ========
 c   Clean up
 c   =======
       lfirst = .false.
+      call dimqm_setlfirst(rtdb, lfirst)
       do ipm = 1,2
         if (.not. ga_destroy(g_pmats(ipm))) call errquit
      $     ('addop: pmats GA?', 0, GA_ERR)

@@ -519,8 +519,8 @@ c
 c     DIM/QM JEM
 c     Add in local field perturbations to the dipole matrix
       if (use_dimqm) then
-         call dimqm_used(ldimqm)
-         call dimqm_getlclfld(lclfld)
+         call dimqm_used(rtdb,ldimqm)
+         call dimqm_getlclfld(rtdb,lclfld)
       else
          ldimqm=.false.
          lclfld=.false.
@@ -528,9 +528,9 @@ c     Add in local field perturbations to the dipole matrix
       write(luout,*) "OMEGA: ", dbl_mb(k_fr+response_order-1)
       write(luout,*) "DIMQM: ", ldimqm
       if (ldimqm) then
-        call dimqm_prep(rtdb, dbl_mb(k_fr+response_order-1))
+c        call dimqm_prep(rtdb, dbl_mb(k_fr+response_order-1))
         if (lclfld) then
-          call dimqm_lclfld(g_dipel, dbl_mb(k_fr+response_order-1))
+          call dimqm_lclfld(rtdb,g_dipel, dbl_mb(k_fr+response_order-1))
         end if
       end if
 

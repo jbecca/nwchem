@@ -1,4 +1,4 @@
-      subroutine dimqm_indDipoles(rtdb, nbf, geom, basis,
+      subroutine dimqm_indDipoles2(rtdb, nbf, geom, basis,
      $                              g_dens, luhf_fd,nDIM)
 c
 c     Determines the induced dipoles for the given density matrix 
@@ -49,53 +49,24 @@ c      integer l_muind, k_muind
       external calcErr
       logical firsttime
       integer id
-c jbecca START
       logical luhf_fd   ! variable for using this routine for FD Open Shell
       logical dimqm_noseed
       logical ldebug
       logical dimqm_seeded
       logical xyz_seeded(6)
       double precision dimtol, dimtol0, dimtolxyz(6)
-c  jbecca END
-c      double precision screen(nDIM)
-
 c
-c     Common variables used
-c
-c     logical lcmplx
-
       id = ga_nodeid()
       call dimqm_get_debug(rtdb, ldebug)
       i3 = nDIM * 3
-c      icmplx = REALMATH
-c      if(lfreq .and. lcmplx) icmplx = COMPLEXMATH
-c      call ga_print(g_dens)
-c
-c     Allocate memory for arrays
-c      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dimrsp:fld',l_fld,k_fld))
-c     $  call errquit('malloc dimrsp:fld failed',1,MA_ERR)
-c
-c
-c      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dimrsp:muind',
-c     $                                            l_muind,k_muind))
-c     $  call errquit('malloc dimrsp:muind failed',1,MA_ERR)
-c
-c
-c      if(.not.ma_push_get(mt_dbl,i3,'dimrsp:xyz',l_dimxyz,k_dimxyz))
-c     $  call errquit('malloc dimrsp:xyz failed',1,MA_ERR)
 c
       if(.not.rtdb_get(rtdb, 'dimpar:coords', mt_dbl, i3, dimxyz))
      $  call errquit('get dimpar:coords failed', 1, RTDB_ERR)
-c      if(.not.rtdb_get(rtdb, 'dimqm:noseed', mt_log, 1, dimqm_noseed))
-c     $  call errquit('indDip: get noseed failed', 1, RTDB_ERR)
       call dimqm_get_noseed(rtdb, dimqm_noseed)
 c
       g_dens_comp = ga_create_atom_blocked(geom,basis,
      $                          'density matrix comp')
 
-c      call dimqm_screening(rtdb, geom, basis, dbl_mb(k_dimxyz),
-c     $                     screen)
-c
       dimErr = ZERO
       alo(2) = 1
       ahi(2) = nbf
@@ -129,8 +100,7 @@ c       Initizalize arrays
           muold = ZERO
           firsttime = .true.
           xyz_seeded(n) = .false.
-          if (.not. rtdb_get(rtdb,'dimqm:dimtol0',mt_dbl,1,dimtol0))
-     $      call errquit('dim_indDip: get dimtol0 failed',1,RTDB_ERR)
+          dimtol0 = 1.0d-5
           if(dimtol0 < 1.0d-4 .and. .not. dimqm_noseed) then
             dimtolxyz(n) = 1.0d-4
             if(id.eq.0 .and. ldebug ) then
@@ -154,16 +124,16 @@ c  jbecca START
 c        write(luout,*)'cpks dens'
 c        call ga_print(g_dens_comp)
 c  jbecca END
-        call dimqm_EqmE(rtdb, g_dens_comp, geom, 
+        call dimqm_EqmE2(rtdb, g_dens_comp, geom, 
      $         basis, fld, dimxyz, nDIM)
 c
 c       Calculate the dipoles induced by the QM density
 c  jbecca START
         if (luhf_fd) then
-            call dimqm_f2d(rtdb, fld, muind, muold, dimxyz, 2,
+            call dimqm_f2d2(rtdb, fld, muind, muold, dimxyz, 2,
      $                 direction(n), ' ',.false.,nDIM)
         else
-            call dimqm_f2d(rtdb, fld, muind, muold, dimxyz, 1,
+            call dimqm_f2d2(rtdb, fld, muind, muold, dimxyz, 1,
      $                 direction(n), ' ',.false.,nDIM)
         endif     !luhf_fd
 c jbecca END
@@ -216,4 +186,4 @@ c      if(.not.ma_chop_stack(l_fld))
 c     $  call errquit('ma chop at l_fld failed',1,MA_ERR)
 c      write(luout,*) "End Dens2Dipoles"
 c
-      end subroutine dimqm_indDipoles
+      end subroutine dimqm_indDipoles2

@@ -1,4 +1,4 @@
-      subroutine dimqm_printDipole(rtdb, muind, icmplx, lpprint)
+      subroutine dimqm_printDipole(rtdb, muind, icmplx, lpprint, nDIM)
 c
 c
 c
@@ -13,7 +13,6 @@ c
 #include "mafdecls.fh"
 #include "global.fh"
 #include "dimqm_constants.fh"
-#include "dimqm.fh"
 
 c   Input variables
       integer rtdb
@@ -21,6 +20,7 @@ c   Input variables
       double precision muind(3,nDIM,icmplx)
 c      double precision qind(nDIM, icmplx)
       logical lpprint
+      integer nDIM
 c
 c   Local variables
       double precision diptot(3, icmplx)

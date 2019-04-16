@@ -132,9 +132,9 @@ c <-- MN solvation models
 c
       use_dimqm = util_module_avail("dimqm")
       if (use_dimqm) then
-         call dimqm_init(rtdb)
-         call dimqm_used(ldimqm)
-         call dimqm_getgo(dimqm_go)
+C         call dimqm_init(rtdb)
+         call dimqm_used(rtdb,ldimqm)
+         call dimqm_getgo(rtdb,dimqm_go)
       else
          ldimqm=.false.
          dimqm_go=.false.

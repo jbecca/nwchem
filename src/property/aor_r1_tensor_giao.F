@@ -313,7 +313,8 @@ c           ------------------
      &        dbgsub,           ! in : logical var for debugging
      &        g_dipel_i,
      &        omega,
-     &        g_temp)           ! in : scratch GA array
+     &        g_temp,           ! in : scratch GA array
+     &        rtdb)           ! in : scratch GA array
             
           enddo                 ! iresp (responding field components)
         enddo                   ! idir    (perturbing E-field comp.)
@@ -376,7 +377,8 @@ c       to store the scaled MO vectors
      &        dbgsub,           ! in : logical var for debugging
      &        g_dipel_i,
      &        omega,
-     &        g_temp)           ! in : scratch GA array            
+     &        g_temp,           ! in : scratch GA array            
+     &        rtdb)           ! in : scratch GA array            
             
           enddo                 ! iresp (responding field components)
         enddo                   ! idir    (perturbing E-field comp.)
@@ -438,7 +440,8 @@ c       twice the icomp=2 component back into g_vecE1(1)
      &        dbgsub,          ! in : logical var for debugging
      &        g_dipel_i,
      &        omega,
-     &        g_temp)           ! in : scratch GA array            
+     &        g_temp,           ! in : scratch GA array            
+     &        rtdb)           ! in : scratch GA array            
             
           enddo                 ! iresp (responding field components)
         enddo                   ! idir    (perturbing E-field comp.)
@@ -486,7 +489,8 @@ c       ------------------------------------------------
      &        dbgsub,          ! in : logical var for debugging
      &        g_dipel_i,
      &        omega,
-     &        g_temp)           ! in : scratch GA array
+     &        g_temp,           ! in : scratch GA array
+     &        rtdb)           ! in : scratch GA array
             
             
           enddo                 ! iresp
@@ -517,7 +521,8 @@ c       if required, calculate dipole-quadrupole polarizability:
      &          dbgsub,        ! in : logical var for debugging
      &          g_dipel_i,
      &          omega,
-     &          g_temp)         ! in : scratch GA array
+     &          g_temp,         ! in : scratch GA array
+     &          rtdb)         ! in : scratch GA array
               
             end do              ! iresp
           end do                ! idir

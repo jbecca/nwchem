@@ -32,12 +32,15 @@ c     Local variables
       integer l_fld, k_fld
       integer l_dimxyz, k_dimxyz
       integer l_muind, k_muind
+      integer l_muold, k_muold
       character*1 direction(3)
       data direction /'x', 'y', 'z'/
+      logical ldebug
 c
 c     Common variables used
 c
 c     logical lcmplx
+      call dimqm_get_debug(rtdb, ldebug)
       if(ldebug) then
         write(luout,*) "Start Dens2Dipoles"
       end if
@@ -59,9 +62,9 @@ c
      $                                            l_muold,k_muold))
      $  call errquit('malloc dimrsp:muold failed',1,MA_ERR)
 c
-c      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dimrsp:muold',
-c     $                                            l_muold,k_muold))
-c     $  call errquit('malloc dimrsp:muold failed',1,MA_ERR)
+      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dimrsp:muold',
+     $                                            l_muold,k_muold))
+     $  call errquit('malloc dimrsp:muold failed',1,MA_ERR)
 c
       if(.not.ma_push_get(mt_dbl,i3,'dimrsp:xyz',l_dimxyz,k_dimxyz))
      $  call errquit('malloc dimrsp:xyz failed',1,MA_ERR)

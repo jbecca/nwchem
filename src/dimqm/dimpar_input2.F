@@ -1,4 +1,4 @@
-      subroutine dimpar_input(rtdb)
+      subroutine dimpar_input2(rtdb)
 *
       implicit none
 #include "errquit.fh"
@@ -26,11 +26,6 @@ c     ----- Input Variable -----
 c
       integer rtdb ! run-time database
 c
-c     ----- Global Variables
-c
-c      logical lcpim
-c      integer nDIMTypes
-c
 c     ----- Local Variables -----
 c      
       integer nDIM
@@ -50,10 +45,6 @@ c
       integer nAtoms                  
       integer nLrtz
       integer nOrder, nDIMTypes
-
-c
-c     ----- Common variables from dimqm.fh -----
-c
 c
 c     ----- Element Parameters -----
 c
@@ -85,8 +76,9 @@ c
       integer id
 c
 c
-      id = ga_nodeid()
       if (ga_nodeid() .ne. 0) return
+      id = ga_nodeid()
+      if (id.eq.0) write(luout,*)'starting dimpar_input2'
 c
 c     ----- Initialize Parameters -----
 c
@@ -148,40 +140,6 @@ c       POL
           if(.not. inp_f(typepol(nDIMTypes)))
      $      call errquit('dimpar:pol',911,INPUT_ERR)
 c
-c       CAP
-        else if(inp_compare(.false.,'cap',field)) then
-          if(.not. inp_f(typecap(nDIMTypes)))
-     $      call errquit('dimpar:cap',911,INPUT_ERR)
-c
-c       CHAR
-        else if(inp_compare(.false.,'char',field)) then
-          if(.not. inp_f(typechar(nDIMTypes)))
-     $      call errquit('dimpar:char',911,INPUT_ERR)
-c
-c       OM1
-        else if(inp_compare(.false.,'om1',field)) then
-          if(.not. inp_f(typeom1(nDIMTypes)))
-     $      call errquit('dimpar:om1',911,INPUT_ERR)
-c
-c       OM2
-        else if(inp_compare(.false.,'om2',field)) then
-          if(.not. inp_f(typeom2(nDIMTypes)))
-     $      call errquit('dimpar:om2',911,INPUT_ERR)
-c
-c       GM1
-        else if(inp_compare(.false.,'gm1',field)) then
-          if(.not. inp_f(typegm1(nDIMTypes)))
-     $      call errquit('dimpar:gm1',911,INPUT_ERR)
-c
-c       GM2
-        else if(inp_compare(.false.,'gm2',field)) then
-          if(.not. inp_f(typegm2(nDIMTypes)))
-     $      call errquit('dimpar:gm2',911,INPUT_ERR)
-c
-c       SIZE
-        else if(inp_compare(.false.,'size',field)) then
-          if(.not. inp_f(typesize(nDIMTypes)))
-     $      call errquit('dimpar:size',911,INPUT_ERR)
 c
 c       RAD
         else if(inp_compare(.false.,'rad',field)) then
@@ -198,28 +156,15 @@ c       ADD UNIT CONVERSION HERE
           end if
           if(.not. stat) call errquit('dimpar:drude',911,INPUT_ERR)
 c
-c       LRTZ
-        else if(inp_compare(.false.,'lrtz',field)) then
-c          pass
-c
 c       BOUND
         else if(inp_compare(.false.,'bound',field)) then
           if(.not. inp_f(typebound(nDIMTypes)))
      $      call errquit('dimpar:bound', 911, INPUT_ERR)
-c
-c       FERMI
-        else if(inp_compare(.false.,'fermi',field)) then
-          stat = inp_f(typefermi(nDIMTypes))
-          if(inp_n_field() > 2) then
-            stat = stat .and. inp_a(units)
-c       ADD UNIT CONVERSION HERE
-          endif
-          if(.not. stat) call errquit('dimpar:fermi',911,INPUT_ERR)
 c       EXP DIELECTRIC
         else if(inp_compare(.false.,'exp',field)) then
           if(.not.inp_a(field))
      $      call errquit('dimpar: exp missing file path', 9, INPUT_ERR)
-          if (id.eq.0) write(luout,*) "Field:", field
+          if(id.eq.0) write(luout,*) "Field:", field
           call inp_save_state()
           open(unit=54, file=field, status='old')
           call inp_init(54, luout)
@@ -428,4 +373,4 @@ c
 c   Deallocate
       stat = ma_chop_stack(l_coords)
 c
-      end subroutine dimpar_input
+      end subroutine dimpar_input2

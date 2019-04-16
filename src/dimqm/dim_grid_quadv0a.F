@@ -3,7 +3,7 @@
      $                            Bmat, Fmat, Pmat, rq, cetobfr,
      $                            ibf_ao, rqbuf, rchi_atom, g_vdim,
      $                            nmat, do_scf, do_cpks_l, l3d,
-     $                            ipm, imag, dimxyz, muind)
+     $                            ipm, imag, dimxyz, muind, nDIM,rtdb)
 
       implicit none
 #include "errquit.fh"
@@ -16,13 +16,12 @@
 #include "util.fh"
 #include "steric.fh"
 #include "msgids.fh"
-#include "dimqm.fh"
 c
 c   Input Variables
       double precision rqbuf(*)
       double precision rad
       integer g_vdim
-      double precision qxyz(3,n_per_rec)
+      double precision qxyz(3,n_per_rec) 
       double precision qwght(n_per_rec)
       integer ncoef_max
       integer iniz(natoms)
@@ -62,10 +61,15 @@ c   Input Variables
       integer imag
       double precision dimxyz(3, nDIM)
       double precision muind(3, nDIM, nmat)
+      integer nDIM
+      integer rtdb, id
+      logical ldebug
 c
-c      if(ldebug) then
-c        write(luout,*) "dim_grid_quadv0a start"
-c      end if
+      ldebug = .true.
+      id = ga_nodeid()
+      if(ldebug.and.id.eq.0) then
+        write(luout,*) "dim_grid_quadv0a start"
+      end if
       
       if(n_rec_in_file.eq.0) goto 100
 c
@@ -123,7 +127,7 @@ c
      $              cetobfr, ibf_ao, int_mb(ibas_cent_info),
      $              int_mb(ibas_cset_info), log_mb(idocset), rchi_atom,
      $              g_vdim, nmat, do_scf, do_cpks_l, l3d, ipm, imag,
-     $              dimxyz, muind)
+     $              dimxyz, muind, nDIM, rtdb)
 c
              ntot_cube=ntot_cube+1
 c

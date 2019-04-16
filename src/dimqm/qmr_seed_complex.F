@@ -1,5 +1,6 @@
       subroutine qmr_seed_complex(rtdb, nlen, g_work, niter, tol, ierr,
-     $                            unknowns, matvec, xyz, ldebug, dir)
+     $                       unknowns, matvec, xyz, ldebug, dir,
+     $                        g_dim_diag_cplx, nDIM, nDIMTypes)
 c
 c     Fancy QMR algorithm.  Will document later.
       implicit None
@@ -26,6 +27,8 @@ c     Input Variables
       double complex unknowns(nlen)
       logical ldebug
       character dir
+      integer g_dim_diag_cplx
+      integer nDIM, nDIMTypes
 c
 c     Local variables
       integer maxiter
@@ -161,7 +164,8 @@ c       Check if D_n is nonsingular
         end if
 c
 c       Multiply current residual by the matrix
-        call matvec(rtdb, nlen, g_work(4), g_work(6), xyz, ldebug)
+        call matvec(rtdb, nlen, g_work(4), g_work(6), 
+     $                  xyz, ldebug, g_dim_diag_cplx, nDIM, nDIMTypes)
 c
 c       Compute p_n^T A p_n
         e_n = ga_zdot(g_work(4), g_work(6))
@@ -259,7 +263,8 @@ c       the targer convergence norm, compute the true residual norm.
         nrm_check = res_nrm_upper_bound
         if((res_nrm_upper_bound/tol <= TEN).or.(niter >= maxiter)) then
 c         Multiply the current residual by the matrix
-           call matvec(rtdb, nlen, g_work(1), g_work(6), xyz, ldebug)
+           call matvec(rtdb, nlen, g_work(1), g_work(6), 
+     $                  xyz, ldebug, g_dim_diag_cplx, nDIM, nDIMTypes)
            call ga_add(ONE_C, g_work(2), -ONE, g_work(6), g_work(6))
            call ga_sync()
            call ga_conjg(g_work(6), g_work(7))
