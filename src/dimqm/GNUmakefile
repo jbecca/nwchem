@@ -12,6 +12,7 @@
          dimqm_printAtomicDipoles.o dimqm_energy.o \
          dimqm_printDipole.o \
          dimqm_indDipoles.o \
+         dimqm_indDipoles2.o \
          dimqm_printAtoms.o dimqm_addop.o dimqm_lclfld.o \
          seeded_qmr_real.o \
          qmr_seed_real.o \
