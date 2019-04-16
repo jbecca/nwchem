@@ -58,6 +58,8 @@ c      integer l_muind, k_muind
 c
       id = ga_nodeid()
       call dimqm_get_debug(rtdb, ldebug)
+      if(id.eq.0 .and. ldebug) write(luout,*)
+     $                  "Starting dimqm_indDipoles2"
       i3 = nDIM * 3
 c
       if(.not.rtdb_get(rtdb, 'dimpar:coords', mt_dbl, i3, dimxyz))

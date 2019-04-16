@@ -16,6 +16,7 @@ c
 #include "global.fh"
 #include "mafdecls.fh"
 #include "rtdb.fh"
+#include "stdio.fh"
 c
 c     Input Variables
       integer rtdb
@@ -42,6 +43,7 @@ c     SCF and need reinitialized.  Also mark this as the last DIM cycle
 c     since these arrays won't be needed in response.
       lfirst = .true.
       call dimqm_setlfirst(rtdb, lfirst)
+      write(luout,*)'starting dimqm_rohf_wrap'
 
       call dimqm_getnDIM(rtdb,nDIM)
 c while g_muold isn't used, for this single cycle run, if it is not
@@ -58,6 +60,7 @@ c created, segfaults happen. TODO: find better way for this to work
       if(.not. ga_destroy(g_muold)) call errquit('dim:destroy g_muold
      $      failed',0,GA_ERR)
 
+      write(luout,*)'Ending dimqm_rohf_wrap'
       end subroutine dimqm_rohf_wrap
 
       subroutine dimqm_rohf_calcDIM(rtdb, geom, basis, nbf, nfock,
@@ -78,6 +81,7 @@ c
 #include "global.fh"
 #include "mafdecls.fh"
 #include "rtdb.fh"
+#include "stdio.fh"
 
 c     Input Variables
       integer rtdb  
@@ -93,7 +97,7 @@ c
 c     Local Variables
       integer rmax
       integer dims(3), chunk(3)
-      logical luhf_fd
+      logical luhf_fd, ldebug
       integer nDIM
       logical ldimqm
       logical lfirst
@@ -109,6 +113,8 @@ c
       call dimqm_used(rtdb, ldimqm)
       call dimqm_getlrsp(rtdb, lrsp)
       call dimqm_getlfirst(rtdb, lfirst)
+      call dimqm_get_debug(rtdb, ldebug)
+      if (ldebug) write(luout,*)'starting dimqm_rohf_calcDIM'
       ! Check to see DIM is on for response
       if (ldimqm .and. lrsp) then
 
@@ -151,6 +157,7 @@ c
      $    call errquit('dimqm_rohf: put g_dim failed', 1, RTDB_ERR)
       end if
 
+      if (ldebug) write(luout,*)'ending dimqm_rohf_calcDIM'
       end subroutine dimqm_rohf_calcDIM
 
 
@@ -175,6 +182,7 @@ c
 #include "global.fh"
 #include "mafdecls.fh"
 #include "dimqm_constants.fh"
+#include "stdio.fh"
 
 c     Input Variables
       integer rtdb
@@ -197,11 +205,13 @@ c     Input Variables
 
 c     Local Variables
       integer g_dim
-      logical ldimqm
+      logical ldimqm, ldebug
       logical lrsp
 
 c     Global Variables from dimqm.fh
 c
+      call dimqm_get_debug(rtdb, ldebug)
+      if (ldebug) write(luout,*)'starting dimqm_rohf_addDIM'
 
       call dimqm_used(rtdb, ldimqm)
       call dimqm_getlrsp(rtdb, lrsp)
@@ -222,6 +232,7 @@ c
      $                     xoff, ivec, FOUR, '+')
       end if
 
+      if (ldebug) write(luout,*)'ending dimqm_rohf_addDIM'
       end subroutine dimqm_rohf_addDIM
 
       subroutine dimqm_rohf_cleanup(rtdb)
