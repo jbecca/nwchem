@@ -54,10 +54,12 @@ c     Local variables
       logical seed_save
       data direction /'x', 'y', 'z'/
       data pm /'+', '-'/
-      logical dimqm_noseed
-      integer nDIM
-      logical ldebug
+      logical dimqm_noseed, ldebug
+      integer nDIM, id
 c
+      id = ga_nodeid()
+      call dimqm_get_debug(rtdb, ldebug)
+      if (ldebug.and.id.eq.0) write(luout,*)'Starting dimqm_lclfld'
       call dimqm_getnDIM(rtdb, nDIM)
       call dimqm_get_debug(rtdb, ldebug)
       nvir = nmo - nclosed - nopen

@@ -104,6 +104,15 @@ $RECYCLE.BIN/
 # debris  created in nwchem compilations
 include_stamp
 dependencies
+
+#include files copied to /src/inc
+src/include/*.h
+src/include/*.fh
+src/tools/build
+src/tools/install
+bin/
+src/config/nwchem_config.h
+src/config/NWCHEM_CONFIG
 # End of debris  created in nwchem compilations
 src/stubs.F
 src/tools/ga-5.7.MPI-TS.DIR.stamp

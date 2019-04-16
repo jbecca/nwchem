@@ -123,12 +123,9 @@ c
 !  jbecca START
 ! these used to use dimqm_on instead of ldimqm. It seems like the original
 ! purpose of that variable was not used. If problems persue, change back
-        if (ldimqm .and. luhf_fd ) 
-     $    call dimqm_indDipoles(rtdb, nbf, geom, basis, 
-     $                           g_dens, .true., nDIM)
-        if (ldimqm .and. (.not. luhf_fd))
-     $    call dimqm_indDipoles(rtdb, nbf, geom, basis, 
-     $                           g_dens, .false., nDIM)
+        if (ldimqm) 
+     $    call dimqm_indDipoles2(rtdb, nbf, geom, basis, 
+     $                           g_dens, luhf_fd , nDIM)
         
 !        if (dimqm_on) call dimqm_indDipoles(rtdb, nbf, geom, basis,
 !     $                                      g_dens)
