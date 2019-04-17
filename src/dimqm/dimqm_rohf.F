@@ -90,6 +90,7 @@ c     Input Variables
       integer nbf
       integer nfock
       integer g_dens
+      integer g_muold
 c
 c     Output Variables
       integer g_dim
@@ -107,8 +108,8 @@ c     Global Variables from dimqm.fh
 c
 c     logical ldimqm, lrsp, lfirst
 c     
-
 c
+      write(luout,*)'got here 3.1'
       call dimqm_getnDIM(rtdb, nDIM)
       call dimqm_used(rtdb, ldimqm)
       call dimqm_getlrsp(rtdb, lrsp)
@@ -125,16 +126,19 @@ c
           call dimqm_check_dipoles(rtdb, 1.0d0, rmax)
         end if
         
+      write(luout,*)'got here 3.2'
         ! Calculate DIM dipoles
 !  jbecca START
 ! these used to use dimqm_on instead of ldimqm. It seems like the original
 ! purpose of that variable was not used. If problems persue, change back
         if (ldimqm) 
+        ! need to later add in different routine to handle FD response
      $    call dimqm_indDipoles2(rtdb, nbf, geom, basis, 
-     $                           g_dens, luhf_fd , nDIM)
+     $                           g_dens, nDIM, g_muold)
         
 !        if (dimqm_on) call dimqm_indDipoles(rtdb, nbf, geom, basis,
 !     $                                      g_dens)
+      write(luout,*)'got here 3.3'
 !jbecca END
 
         ! Build potential from dipoles
@@ -149,7 +153,9 @@ c
      $    call errquit('dimqm_rohf: could not allocate g_dim',555,
      $                 GA_ERR)
         call ga_zero(g_dim)  
+        write(luout,*)'got here 3.4'
         call fock_dim(geom, nbf, basis, nfock, g_dim, 0, 1)
+        write(luout,*)'got here 3.5'
         call ga_symmetrize(g_dim)
         call ga_sync()
         

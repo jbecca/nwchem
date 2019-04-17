@@ -84,7 +84,6 @@ c     $   1,MA_ERR)
       if(.not.ma_alloc_get(mt_dbl,3*nDIM,'dimqm:muind',l_muind,
      $   k_muind)) call errquit('dimqm_main2: malloc k_muind failed',
      $   1,MA_ERR)
-      write(luout,*)'got here 1'
 c  get and allocate coords
          if(.not.rtdb_get(rtdb,'dimpar:coords',mt_dbl,
      $      3*nDIM,dbl_mb(k_dimxyz))) call errquit
@@ -92,14 +91,12 @@ c  get and allocate coords
 c  Call EqmN2 to get the field contributions due to QM nuclei
       call dimqm_EqmN2(rtdb, geom, dbl_mb(k_dimxyz), g_eqmn, nDIM)
       call ga_print(g_eqmn)
-      write(luout,*)'got here 2'
 c  Zero EqmE
       call dfill(3*nDIM, 0.0d0, dbl_mb(k_eqme), 1)
 c  Call EqmE to get field contributions due to QM e-
       call dimqm_EqmE2(rtdb, g_dens, geom, basis, 
      $         dbl_mb(k_eqme), dbl_mb(k_dimxyz), nDIM, g_eqme)
       if(id.eq.0) write(luout,*)'back from eqme2'
-      write(luout,*)'got here 3'
 c  Add eqme and eqmn and place into etot
       call ga_add(1.0d0, g_eqme, 1.0d0, g_eqmn, g_etot)
       call dimqm_getlfirst(rtdb, lfirst)
@@ -111,7 +108,6 @@ c  Add eqme and eqmn and place into etot
          call dfill (3*nDIM, 0.0d0, dbl_mb(k_muold),1)
       endif
 c
-      write(luout,*)'got here 4'
 c      call dimqm_f2d(rtdb, Etot, muind, muold, dimxyz, 1, 'g', nDIM)
 c  ------------------------- Things we need from calc ------------------
 c     Name           reason
