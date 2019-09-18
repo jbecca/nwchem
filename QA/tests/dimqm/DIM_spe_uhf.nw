@@ -11,7 +11,7 @@ symmetry c1
 end
 
 basis spherical
- * library 6-311++G
+ * library 6-311G
 end
 
 driver
@@ -25,10 +25,8 @@ dft
  grid medium 
 end
 
-set dft:efield 0.001 0.0 0.0
 
 dimqm
- EFIELD 0.001 0.0 0.0
  PIM
  Algorithm 1
  screen EXP 1.0d0
