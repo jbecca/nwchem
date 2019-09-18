@@ -48,7 +48,7 @@ c  of a way to write GA to disk and read easily
       id = ga_nodeid()
       stat = rtdb_parallel(.true.)
       call dimqm_get_debug(rtdb, ldebug)
-      if (ldebug) write(luout,*)'starting dimqm_main2'
+      if (ldebug.and.(id.eq.0)) write(luout,*)'starting dimqm_main2'
       call dimqm_getlfirst(rtdb, lfirst)
       nOrder = 3*nDIM
       if (lfirst) call ga_zero(g_muold)
@@ -75,6 +75,7 @@ c     $   1,MA_ERR)
       if(.not.ma_alloc_get(mt_dbl,3*nDIM,'dimqm:eqme',l_eqme,
      $   k_eqme)) call errquit('dimqm_main2: malloc k_eqme failed',
      $   1,MA_ERR)
+      if (ldebug.and.(id.eq.0)) write(luout,*)'got here 2 in main'
 c      if(.not.ma_alloc_get(mt_dbl,3*nDIM,'dimqm:etot',l_etot,
 c     $   k_etot)) call errquit('dimqm_main2: malloc k_etot failed',
 c     $   1,MA_ERR)

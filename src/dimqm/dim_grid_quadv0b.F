@@ -4,7 +4,8 @@
      $                            cetobfr, ibf_ao, bas_cent_info,
      $                            bas_cset_info, docset, rchi_atom,
      $                            g_vdim, nmat, do_scf, do_cpks_l, l3d,
-     $                            ipm, imag, dimxyz, muind, nDIM, rtdb)
+     $                            ipm, imag, dimxyz, muind, nDIM, rtdb,
+     $                            lcpks)
 c
 c$Id: dim_grid_quadv0b.F 19821 2010-12-14 07:46:49Z d3y133 $
 c
@@ -48,6 +49,7 @@ c   Input Variables
       integer nmat ! Number of density matrices (number of perturbing directions)
       logical do_scf
       logical do_cpks_l
+      logical lcpks
       logical l3d
       integer ipm
       integer imag
@@ -139,16 +141,17 @@ c
 c     Evaluate the DIM potential
 c     Set up pointer to the SCF density for the CPKS LHS case.
 c
-c----- original, worked for all cases ------
-      call dim_eval_fnl(rho, nqpts, qwght,
-     &     dimxyz, qxyz, 
-     $     nmat, ipm, imag, muind,nDIM, rtdb)
-c----- orig
-c----- new, gs only
-c      call dim_eval_fnl2(rho, nqpts, qwght,
+c      call dim_eval_fnl(rho, nqpts, qwght,
 c     &     dimxyz, qxyz, 
-c     $     muind,nDIM, rtdb)
-c----- new, gs only
+c     $     nmat, ipm, imag, muind,nDIM, rtdb)
+      if (lcpks) then
+            call dim_eval_fnl(rho, nqpts, qwght, dimxyz,
+     &            qxyz, nmat, ipm, imag, muind, nDIM, rtdb)
+      else
+            call dim_eval_fnl2(rho, nqpts, qwght,
+     &            dimxyz, qxyz, 
+     $            muind,nDIM, rtdb)
+      endif
 c       rho(1:nqpts*nmat) = 0.0d0
 c
 c   Transform the potential from over the quadrature points to the shape of the Fock Matrix

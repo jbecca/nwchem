@@ -3,7 +3,8 @@
      $                            Bmat, Fmat, Pmat, rq, cetobfr,
      $                            ibf_ao, rqbuf, rchi_atom, g_vdim,
      $                            nmat, do_scf, do_cpks_l, l3d,
-     $                            ipm, imag, dimxyz, muind, nDIM,rtdb)
+     $                            ipm, imag, dimxyz, muind, nDIM,rtdb,
+     $                            lcpks)
 
       implicit none
 #include "errquit.fh"
@@ -39,6 +40,7 @@ c   Input Variables
       integer nmat
       logical do_scf
       logical do_cpks_l
+      logical lcpks
       double precision ccoef(ncoef_max)
       integer natoms
       
@@ -127,7 +129,7 @@ c
      $              cetobfr, ibf_ao, int_mb(ibas_cent_info),
      $              int_mb(ibas_cset_info), log_mb(idocset), rchi_atom,
      $              g_vdim, nmat, do_scf, do_cpks_l, l3d, ipm, imag,
-     $              dimxyz, muind, nDIM, rtdb)
+     $              dimxyz, muind, nDIM, rtdb, lcpks)
 c
              ntot_cube=ntot_cube+1
 c

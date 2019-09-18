@@ -57,6 +57,17 @@ c
      $      call errquit('dimqm_getlrsp failed',1,RTDB_ERR)
       return
       end
+      subroutine dimqm_getlcpks(rtdb,lcpks)
+      implicit none
+#include "rtdb.fh"
+#include "errquit.fh"
+#include "mafdecls.fh"
+      integer rtdb
+      logical lcpks
+      if (.not.(rtdb_get(rtdb, 'dimqm:lcpks',mt_log,1,lcpks)))
+     $      lcpks = .false.
+      return
+      end
       subroutine dimqm_getlclfld(rtdb,lclfld)
       implicit none
 #include "rtdb.fh"

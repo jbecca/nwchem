@@ -108,6 +108,8 @@ c     Local Variables
       call dimqm_getlrsp(rtdb, lrsp)
       call dimqm_getlfirst(rtdb, lfirst)
       call dimqm_get_debug(rtdb, ldebug)
+      if (.not.(rtdb_put(rtdb, 'dimqm:lcpks', mt_log, 1, .true.)))
+     $      call errquit('dimqm lcpks put failed', 1, RTDB_ERR)
       if (ldebug) write(luout,*)'starting dimqm_rohf_calcDIM'
       ! Pull in residual and check seeding status
       if (.not.lfirst) then

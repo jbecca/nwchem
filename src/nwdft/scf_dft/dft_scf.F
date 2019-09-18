@@ -1148,12 +1148,12 @@ c     DIM/QM JEM
 c     Calculate DIM/QM dipoles
 c     We use the total density to calculate the dipoles.
 c
+      if (ga_nodeid().eq.0) write(luout,*)'got here 1'
       if(ldimqm .and. dimqm_go) then
 c        call dimqm_main(rtdb, ao_bas_han, geom, g_dens, .false.,nDIM)
         call dimqm_main2(rtdb, ao_bas_han, geom, g_dens, .false.,nDIM,
      $                        g_muold)
       end if
-
 c
 c     Determine HOMO energy (for Zhan-Nichols-Dixon AC)
 c
@@ -1180,6 +1180,7 @@ c     build DFT Fock matrix
 c  jbecca START: adding in electric field energy interaction term
       eelec = zero
 c
+      if (ga_nodeid().eq.0) write(luout,*)'got here 2'
       if(util_print('dft timings', print_high))
      &      time1=util_wallsec()  ! start fock matrix build time
 c     flip spins if needed
@@ -1205,6 +1206,7 @@ c     remove flipping to avoid multiple operation in geom opt.
          if(.not.rtdb_delete(rtdb, 'nwdft:spinflip'))
      &        call errquit('dft_scf: cannot rtdb_delete',3, MA_ERR)
       endif
+      if (ga_nodeid().eq.0) write(luout,*)'got here 3'
       call dft_fockbld(rtdb,natoms,ntotel,
      ,     g_fock,g_focks,g_dens,g_vxc,g_movecs,g_xcinv, 
      ,     g_tmp,g_nq,g_wght,g_xyz,
@@ -1221,6 +1223,7 @@ cc AJL/Begin/FDE
 c     &     g_zora_sf,g_frozemb)
      &     g_zora_sf,g_frozemb,g_vxc_fde,g_xcinv_fde,g_dens_fde,eelec)
 cc AJL/End
+      if (ga_nodeid().eq.0) write(luout,*)'got here 4'
       if(util_print('dft timings', print_high))
      &      time2=util_wallsec()  ! end fock matrix build time
 c
@@ -1234,6 +1237,7 @@ c     print fock matrix build time
 c     
 c     Calculate the total electronic energy.
 c     
+      if (ga_nodeid().eq.0) write(luout,*)'got here 5'
       if (nExc.eq.1)then
 c  jbecca START: adding in eelec here
          Etnew = Ecore + Ecoul + Exc(1) + Edisp + eelec
