@@ -67,9 +67,9 @@ c   Input Variables
 c
       ldebug = .true.
       id = ga_nodeid()
-      if(ldebug.and.id.eq.0) then
-        write(luout,*) "dim_grid_quadv0a start"
-      end if
+c      if(ldebug.and.id.eq.0) then
+c        write(luout,*) "dim_grid_quadv0a start"
+c      end if
       
       if(n_rec_in_file.eq.0) goto 100
 c

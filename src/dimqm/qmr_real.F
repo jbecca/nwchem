@@ -153,17 +153,9 @@ c       Check if D_n is nonsingular
           return
         end if
 c
-        if(id.eq.0.and.ldebug) write(luout,*)'gwork4-1'
-         call ga_print(g_work(4))
-        if(id.eq.0.and.ldebug) write(luout,*)'gwork6-1'
-         call ga_print(g_work(6))
 c       Multiply current residual by the matrix
         call matvec(rtdb, nlen, g_work(4), g_work(6), 
      $               xyz, ldebug, g_dim_diag_real, nDIM, nDIMTypes)
-        if(id.eq.0.and.ldebug) write(luout,*)'gwork4-2'
-         call ga_print(g_work(4))
-        if(id.eq.0.and.ldebug) write(luout,*)'gwork6-2'
-         call ga_print(g_work(6))
 c
 c       Compute p_n^T A p_n
         e_n = ga_ddot(g_work(4), g_work(6)) * scpn**2
@@ -205,8 +197,6 @@ c       Compute the new QMR iterate, then scale the search direction
         dtmp = scs * rhs_n
 c       g_work(:,1) = g_work(:,1) + dtmp * g_work(:,5)
         call ga_add(ONE, g_work(1), dtmp, g_work(5), g_work(1))
-        if(id.eq.0.and.ldebug) write(luout,*)'gwork1-1'
-         call ga_print(g_work(1))
         if((ABS(scs) >= max_tol) .or. (ABS(scs) <= min_tol)) then
 c         g_work(:,5) = scs * g_work(:,5)
           call ga_scale(g_work(5), scs)
@@ -225,8 +215,6 @@ c         Multiply the current residual by the matrix
            call matvec(rtdb, nlen, g_work(1), g_work(6), 
      $                  xyz, ldebug, g_dim_diag_real, nDIM, nDIMTypes)
 c          g_work(:,6) = g_work(:,2) - g_work(:,6)
-        if(id.eq.0.and.ldebug) write(luout,*)'gwork1-2'
-         call ga_print(g_work(1))
            call ga_add(ONE, g_work(2), -ONE, g_work(6), g_work(6))
            call ga_sync()
            res_nrm = SQRT(ga_ddot(g_work(6), g_work(6))) / res_0
@@ -267,8 +255,6 @@ c     Put proper values into output variables
       if (niter > maxiter) ierr = 3
       tol = res_nrm
       call ga_get(g_work(1), 1, nLen, 1, 1, unknowns, 1)
-      if(id.eq.0) write(luout,*)'unknowns',unknowns
-      call ga_print(g_work(1))
       if(id.eq.0.and.ldebug) write(LuOut,*)
      $   "End QMR Routine"
       end subroutine qmr_real

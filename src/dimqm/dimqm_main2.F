@@ -48,8 +48,8 @@ c  of a way to write GA to disk and read easily
       id = ga_nodeid()
       stat = rtdb_parallel(.true.)
       call dimqm_get_debug(rtdb, ldebug)
+      if (ldebug) write(luout,*)'starting dimqm_main2'
       call dimqm_getlfirst(rtdb, lfirst)
-      write(luout,*)'Starting dimqm_main2'
       nOrder = 3*nDIM
       if (lfirst) call ga_zero(g_muold)
 c ----------------- Initialize GA's used in DIM cycle ------------------
@@ -90,13 +90,13 @@ c  get and allocate coords
      $      ('dimmain2: xyz rtdb get failed',1,RTDB_ERR)
 c  Call EqmN2 to get the field contributions due to QM nuclei
       call dimqm_EqmN2(rtdb, geom, dbl_mb(k_dimxyz), g_eqmn, nDIM)
-      call ga_print(g_eqmn)
+c      call ga_print(g_eqmn)
 c  Zero EqmE
       call dfill(3*nDIM, 0.0d0, dbl_mb(k_eqme), 1)
 c  Call EqmE to get field contributions due to QM e-
       call dimqm_EqmE2(rtdb, g_dens, geom, basis, 
      $         dbl_mb(k_eqme), dbl_mb(k_dimxyz), nDIM, g_eqme)
-      if(id.eq.0) write(luout,*)'back from eqme2'
+c      if(id.eq.0) write(luout,*)'back from eqme2'
 c  Add eqme and eqmn and place into etot
       call ga_add(1.0d0, g_eqme, 1.0d0, g_eqmn, g_etot)
       call dimqm_getlfirst(rtdb, lfirst)
@@ -140,12 +140,12 @@ c        than the dipoles since it only needs to apply to QM grid
       call ga_init_fence()
       call ga_get(g_etot, 1, nOrder, 1, 1, dbl_mb(k_muind), 1)
       call ga_fence()
-      call ga_print(g_etot)
-      if (id.eq.0) then
-         do i = 0, nOrder-1
-            write(luout,*)'k_muind',i+1,' ',dbl_mb(k_muind+i)
-         enddo
-      endif
+c      call ga_print(g_etot)
+c      if (id.eq.0) then
+c         do i = 0, nOrder-1
+c            write(luout,*)'k_muind',i+1,' ',dbl_mb(k_muind+i)
+c         enddo
+c      endif
       if(.not.rtdb_put(rtdb, 'dimqm:muind',mt_dbl,nOrder,
      $   dbl_mb(k_muind))) call errquit('dim_main2: rtdb put muind
      $   failed',1,RTDB_ERR)

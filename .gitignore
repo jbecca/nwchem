@@ -124,4 +124,8 @@ src/util/util_ga_version.F
 src/util/util_module_avail.F
 src/util/util_nwchem_version.F
 src/util/util_scalapack_info.F
+QA/tests/dimqm/*.tar.gz
+QA/tests/dimqm/*.out
+src/peigs/peigs_stamp.LINUX64
+src/util/util_version.F
 

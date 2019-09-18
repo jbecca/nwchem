@@ -51,8 +51,8 @@ c
 c      Determine node ID
       id = ga_nodeid()
       nprocs = ga_nnodes()
-      if(ldbg .and. id.eq.0) write(LuOut,*)
-     $   "Start MatvecReal routine"
+c      if(ldbg .and. id.eq.0) write(LuOut,*)
+c     $   "Start MatvecReal routine"
       time = util_timer()
 c
 c      Zero right-hand side
@@ -98,8 +98,8 @@ c      Loop over atoms on this node
       end do
       call ga_fence()
       time = util_timer() - time
-      if(ldbg .and. id.eq.0) write(LuOut,*)
-     $   "End MatvecReal Routine"
+c      if(ldbg .and. id.eq.0) write(LuOut,*)
+c     $   "End MatvecReal Routine"
 
       contains 
       function atomPairField(m, n, mxyz, nxyz, mpol, npol,

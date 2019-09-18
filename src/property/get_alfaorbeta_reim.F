@@ -66,7 +66,7 @@ c  DIM/QM stuff
 
       if (use_dimqm) then
          call dimqm_used(rtdb,ldimqm)
-         call dimqm_getlclfld(rtdb,lclfld)
+         if (ldimqm) call dimqm_getlclfld(rtdb,lclfld)
       else
          ldimqm   =  .false.
          lclfld   =  .false.

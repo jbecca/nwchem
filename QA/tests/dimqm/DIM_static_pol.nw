@@ -20,7 +20,7 @@ end
 
 dft
  iterations 200
- xc xpbe96 1.0 cpbe96 1.0
+ xc b3lyp
  grid medium 
 end
 

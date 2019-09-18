@@ -28,10 +28,10 @@ c---------------------------- Local Variables --------------------------
 
       id = ga_nodeid()
       ldebug = .true.
-      if (ldebug.and.id.eq.0) write(luout,*)'starting dimqm_iterative2'
+c      if (ldebug.and.id.eq.0) write(luout,*)'starting dimqm_iterative2'
       if(.not.rtdb_get(rtdb, 'dimpar:ndimtypes', mt_int,1,nDIMTypes))
      $   call errquit('dim_iter2: get nDIMTypes failed',1,RTDB_ERR)
-      if (ldebug.and.id.eq.0) write(luout,*)'got ndimtypes'
+c      if (ldebug.and.id.eq.0) write(luout,*)'got ndimtypes'
 c  Allocate the work GAs
       i3 = 3*nDIM
       if(.not.ga_create(mt_dbl,i3,1,'g_dimwork1',0,0,g_dimwork(1)))
@@ -47,21 +47,15 @@ c      call errquit('stop here in iter2')
      $   call errquit('g_dimwork5: create failed',0,GA_ERR)
       if(.not.ga_create(mt_dbl,i3,1,'g_dimwork6',0,0,g_dimwork(6)))
      $   call errquit('g_dimwork6: create failed',0,GA_ERR)
-      if (ldebug.and.id.eq.0) write(luout,*)'allocated gdimwork arrays'
 
       nIter = MAX(i3, 1000)
 
-      if (ldebug.and.id.eq.0) write(luout,*)'calling prep real'
       call dimqm_prep_real(rtdb, g_dim_diag_real, nDIM, nDIMTypes)
-      if (ldebug.and.id.eq.0) write(luout,*)'back from prep real'
       call dimqm_setlfirst(rtdb,.true.)
-      if (ldebug.and.id.eq.0) write(luout,*)'set lfirst'
       if(.not.rtdb_get(rtdb,'dimqm:dimtol',mt_dbl,1,dimtol))
      $   call errquit('dimqm_iter2: get dimtol failed',1,RTDB_ERR)
-      if (ldebug.and.id.eq.0) write(luout,*)'calling qmr real'
       call qmr_real2(rtdb, i3, g_dimwork, nIter, dimtol, ierr, g_fld,
      $      matvecReal, xyz, ldebug, g_dim_diag_real, nDIM, nDIMTypes)
-      if (ldebug.and.id.eq.0) write(luout,*)'back from qmr real'
 
       select case (ierr)
       case (0)
@@ -86,5 +80,4 @@ c  converged
      $   0,GA_ERR)
       if (.not.ga_destroy(g_dim_diag_real)) 
      $   call errquit('dim_iter2:destroy dim diag failed',0,GA_ERR)
-      if (ldebug.and.id.eq.0) write(luout,*)'end of dimqm_iterative2'
       end subroutine dimqm_iterative2

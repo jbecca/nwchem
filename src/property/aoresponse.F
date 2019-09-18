@@ -300,8 +300,10 @@ c      Normally, the imaginary part of the A matrix is zero, but
 c      this is not true when working with local fields
       if (use_dimqm) then
          call dimqm_used(rtdb,ldimqm)
-         call dimqm_getlrsp(rtdb,lrsp)
-         call dimqm_getlclfld(rtdb,lclfld)
+         if (ldimqm) then
+           call dimqm_getlrsp(rtdb,lrsp)
+           call dimqm_getlclfld(rtdb,lclfld)
+         endif
 c jbecca: START: Botched this call in util, because I didn't like it 
 c           being a global variable. Could fix this later, but no DIM
 c           parts are tested against this driver anyway.

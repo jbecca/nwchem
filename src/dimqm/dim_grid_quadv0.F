@@ -132,10 +132,10 @@ cng
          call grid_packing_info
       end if
 c
-      if (oprint) then      
-        write(*,*) " *** dim_grid_quadv0: calc_type:",calc_type 
-        write(*,*) " *** dim_grid_quadv0: grid_written:",grid_written 
-      end if
+c      if (oprint) then      
+c        write(*,*) " *** dim_grid_quadv0: calc_type:",calc_type 
+c        write(*,*) " *** dim_grid_quadv0: grid_written:",grid_written 
+c      end if
 c
 c     Set up logicals denoting calculation type
 c
@@ -146,10 +146,10 @@ c
      &    1,INPUT_ERR)
       endif
 c
-      if (oprint) then
-        write(*,*) " *** dim_grid_quadv0: do_scf:",do_scf 
-        write(*,*) " *** dim_grid_quadv0: n_per_rec:",n_per_rec
-      end if
+c      if (oprint) then
+c        write(*,*) " *** dim_grid_quadv0: do_scf:",do_scf 
+c        write(*,*) " *** dim_grid_quadv0: n_per_rec:",n_per_rec
+c      end if
 c
       len_tau = 1
       len_mmat = 1
@@ -176,7 +176,7 @@ c
      &                        Dbl_MB(ixyz), Dbl_MB(icharge)))
      &   call errquit('grid_den: geom_cart_get failed',74, GEOM_ERR)
 c
-      write(*,*)' Coordinates from grid_den.F '
+c      write(*,*)' Coordinates from grid_den.F '
 c      call output(dbl_mb(ixyz), 1, 3, 1, nctrs, 3, nctrs, 1)
 c     &                    
 c
@@ -299,7 +299,7 @@ c     Allocate and read in induced dipoles
             if(.not.rtdb_get(rtdb,'dimqm:muind_'//direction(idir),
      $                       mt_dbl, 3*nDIM,
      $                       dbl_mb(k_muind+i3*(idir-1))))
-     $       call errquit('get perturbed xyz dipoles failed',6,RTDB_ERR)
+     $       call errquit('get pert xyz dip failed quadv0',6,RTDB_ERR)
           end if
         end do
       else ! Ground state

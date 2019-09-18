@@ -140,14 +140,14 @@ c     Evaluate the DIM potential
 c     Set up pointer to the SCF density for the CPKS LHS case.
 c
 c----- original, worked for all cases ------
-c      call dim_eval_fnl(rho, nqpts, qwght,
-c     &     dimxyz, qxyz, 
-c     $     nmat, ipm, imag, muind,nDIM, rtdb)
+      call dim_eval_fnl(rho, nqpts, qwght,
+     &     dimxyz, qxyz, 
+     $     nmat, ipm, imag, muind,nDIM, rtdb)
 c----- orig
 c----- new, gs only
-      call dim_eval_fnl2(rho, nqpts, qwght,
-     &     dimxyz, qxyz, 
-     $     muind,nDIM, rtdb)
+c      call dim_eval_fnl2(rho, nqpts, qwght,
+c     &     dimxyz, qxyz, 
+c     $     muind,nDIM, rtdb)
 c----- new, gs only
 c       rho(1:nqpts*nmat) = 0.0d0
 c

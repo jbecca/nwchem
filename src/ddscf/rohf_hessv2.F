@@ -19,7 +19,6 @@ c
 c     
 c     Check
 c     
-      write(luout,*)'got here 1.1'
       oprint = util_print('hessv',print_high)
       olprint = oprint.and.(ga_nodeid().eq.0)
       if (crohf_init_flag.ne.1)
@@ -51,7 +50,6 @@ c
         enddo
       endif
 c     
-      write(luout,*)'got here 1.2'
 c     Call internal routine
 c     
       call rohf_hessv_xx2( basis, geom, nbf, nmo,
@@ -59,7 +57,6 @@ c
      $     pflg, g_movecs, oskel, noskew,
      $     crohf_g_fcv, crohf_g_fpv, crohf_g_fcp,
      $     acc, lshift, g_x, g_ax )
-      write(luout,*)'got here 1.3'
 c
 c     Zap numbers much smaller than acc to ensure hard zeroes 
 c     remain unpolluted ... cannot use a threshold larger than the
@@ -70,7 +67,6 @@ c
 *      call ga_screen(g_ax, acc*0.01d0)
       call ga_screen(g_ax, min(acc*acc,acc*0.01d0,1d-12))
 c
-      write(luout,*)'got here 1.4'
       if (oprint) then
         do icol = 1, gcolp
           ilo(1) = 1
@@ -84,7 +80,6 @@ c
           endif
         enddo
       endif
-      write(luout,*)'got here 1.5'
 c
       end
       subroutine rohf_hessv_xx2( basis, geom, nbf, nmo, nclosed, nopen, 
@@ -174,7 +169,7 @@ c
       integer g_work
 c
       logical ldimqm
-      integer g_dim, g_muold
+      integer g_dim
 c
       integer dims(3), chunk(3), alo(3), ahi(3), blo(2), bhi(2)
       integer ga_create_atom_blocked
@@ -429,13 +424,10 @@ c     DIM/QM JEM
       if (.not.rtdb_get(bgj_get_rtdb_handle(), 'dimqm:lrsp', mt_log,
      $                  1, ldimqm)) ldimqm = .false.
 c     Calculate DIM dipoles and DIM potential
-      write(luout,*)'got here 2.1'
       if (ldimqm) then
-c  jbecca START: added false variable to subroutine call
+c  added false variable to subroutine call
         call dimqm_rohf_calcDIM(bgj_get_rtdb_handle(), geom, basis,
-     $                   nbf, nfock, g_dens, g_dim, .false., g_muold)
-        write(luout,*)'got here 2.2'
-c jbecca END
+     $                   nbf, nfock, g_dens, g_dim, .false.)
       end if
 
       ifock = 0
@@ -505,12 +497,12 @@ c
 c     DIM/QM JEM
 c     Add DIM potential to the Fock Matrix
 c        if (ldimqm) then
-c          call dimqm_rohf_addDIM(rtdb, g_ax, ivec, xoff, voff,
+c          call dimqm_rohf_addDIM(bgj_get_rtdb_handle(), g_ax, ivec, 
+c     $                           xoff, voff,
 c     $                           nclosed, nvir, nmo, nbf, 
 c     $                           g_dcv, g_movec, g_tmp1, g_tmp2,
 c     $                           alo, ahi, blo, bhi)
 c        end if  
-         write(luout,*)'got here 2.2.1'
          if(ldimqm) then
            call nga_copy_patch('N',g_dim,alo,ahi,g_dcv,blo,bhi)
            call ga_scale(g_dcv, TWO)
@@ -522,11 +514,11 @@ c        end if
      $                           g_movec, voff, nmo, 1, nbf,
      $                           g_tmp1, 1, nbf,  1, nclosed,
      $                           g_tmp2, 1, nvir, 1, nclosed)
-           call ga_sync()
+           xoff = 1
+           xend = nvir*nclosed
            call ga_mat_to_vec(g_tmp2, 1, nvir, 1, nclosed, g_ax,
      $                         xoff, ivec, four, '+')
          end if
-         write(luout,*)'got here 2.2.2'
 c
 c     
          if (nopen .gt. 0) then
@@ -569,13 +561,12 @@ c
 *     $           g_ax, xoff, xend, ivec, ivec)
          endif
       enddo
-      write(luout,*)'got here 2.3'
 c    DIM/QM JEM
-      if (ldimqm) then
-        if (.not.ga_destroy(g_dim))
-     &    call errquit('hessv_2e2: problem destroying g_dim array',1,
-     &                 GA_ERR)
-      end if
+c      if (ldimqm) then
+c        if (.not.ga_destroy(g_dim))
+c     &    call errquit('hessv_2e2: problem destroying g_dim array',1,
+c     &                 GA_ERR)
+c      end if
       if (.not.ma_chop_stack(l_jfac))
      &   call errquit('hessv2: cannot chop stack',0, MA_ERR)
 c

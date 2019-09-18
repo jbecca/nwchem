@@ -25,7 +25,6 @@ c  START
       ldebug = .true.
       nprocs = ga_nnodes()
       id = ga_nodeid()
-      if(id.eq.0) write(Luout,*)'ndim',nDIM,'nNuc',nNuc
       call ga_init_fence() 
       do i = 1, nDIM
          do j = 1, nNuc

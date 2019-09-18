@@ -133,8 +133,9 @@ c
       use_dimqm = util_module_avail("dimqm")
       if (use_dimqm) then
 C         call dimqm_init(rtdb)
-         call dimqm_used(rtdb,ldimqm)
-         call dimqm_getgo(rtdb,dimqm_go)
+         if (.not.rtdb_get(rtdb, 'dimqm:ldimqm', mt_log, 1, ldimqm))
+     $      ldimqm = .false.
+         if (ldimqm) call dimqm_getgo(rtdb,dimqm_go)
       else
          ldimqm=.false.
          dimqm_go=.false.

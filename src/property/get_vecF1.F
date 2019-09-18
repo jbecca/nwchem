@@ -210,8 +210,10 @@ c jbecca START DIMQM
 
       if (use_dimqm) then
          call dimqm_used(rtdb,ldimqm)
-         call dimqm_getlrsp(rtdb,lrsp)
-         call dimqm_getlclfld(rtdb,lclfld)
+         if (ldimqm) then
+            call dimqm_getlrsp(rtdb,lrsp)
+            call dimqm_getlclfld(rtdb,lclfld)
+         endif
       else
          ldimqm   =  .false.
          lrsp     =  .false.

@@ -257,8 +257,9 @@ c   require knowledge of the real and imaginary simultaneously.
       if (.not.rtdb_get(bgj_get_rtdb_handle(),'dimqm:lrsp',MT_LOG, 1,
      $                  ldimqm)) ldimqm = .false.
       if(ldimqm) then
-        call dimqm_addop(g_x, g_x_im, g_ax, g_ax_im, ncomp, 
-     $                   limag, lifetime)
+        write(*,*)'Here in rohf_hessv3'
+        call dimqm_addop(bgj_get_rtdb_handle(),g_x, g_x_im, 
+     $   g_ax, g_ax_im, ncomp, limag, lifetime)
       end if
 c     
       end

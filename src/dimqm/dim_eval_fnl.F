@@ -40,7 +40,6 @@ c      data dpm /'+', '-'/
 c      data dri /'r', 'i'/
 c
       id = ga_nodeid()
-      if (id.eq.0) write(luout,*) "npert ", npert, "ipm ", ipm
 c
       if (.not. rtdb_get(rtdb, 'dimqm:scrnType', mt_int, 1, scrnType))
      $   call errquit('dim_eval_fnl: scrnType get failed',1,RTDB_ERR)
@@ -76,11 +75,9 @@ c        write(luout,*) "muind", id, muind
         endif
         do n = 1, nq ! Loop over quadrature points
           do i = 1, nDIM ! Loop over DIM atoms
-c
 c           Distance between two points
             r(:) = xyz(:,i) - qxyz(:,n) 
             dist = SQRT((r(1)**2 + r(2)**2 + r(3)**2))
-c
 c           Screening
             screen_mu = ONE
             select case (scrnType)
@@ -94,7 +91,6 @@ c           Screening
               if (dist < 1.0d-12) dist = 1.0d-12
             end select
             dist3 = dist * dist * dist
-c
 c           Calculate potential
             ptnl(n,idir) = ptnl(n,idir)
      $                           - screen_mu*muind(1,i,idir)*r(1)/dist3
@@ -104,13 +100,10 @@ c           Calculate potential
      $                           - screen_mu*muind(3,i,idir)*r(3)/dist3
           end do ! End loop over DIM atoms
         end do ! End loop over quadratrue points
-c
 c       Combine with quadrature weights
         do jj = 1, nq
           ptnl(jj,idir) = -ptnl(jj,idir)*qwght(jj)
         enddo
-c
       end do ! End loop over perturbations
-c      write(luout,*) "End eval_fnl"
       return
       end subroutine dim_eval_fnl

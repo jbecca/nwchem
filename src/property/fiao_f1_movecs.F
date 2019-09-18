@@ -263,22 +263,20 @@ c     get the correct magnitude of the result back
       bhi(1) = ntot
       blo(2) = 1
       bhi(2) = ndir  
+      if (use_dimqm) then
+       call dimqm_used(rtdb,ldimqm)
+      else
+       ldimqm=.false.
+       lrsp=.false.
+       lclfld=.false.
+      endif
+      if (ldimqm) then
+        call dimqm_getlrsp(rtdb,lrsp)
+        call dimqm_getlclfld(rtdb,lclfld)
+      endif
       do ipm = 1,ncomp
         call nga_scale_patch(g_rhs(ipm),blo,bhi,-4.0d0)
-c       DIM/QM JEM
-      if (use_dimqm) then
-         call dimqm_used(rtdb,ldimqm)
-         call dimqm_getlrsp(rtdb,lrsp)
-         call dimqm_getlclfld(rtdb,lclfld)
-      else
-         ldimqm=.false.
-         lrsp=.false.
-         lclfld=.false.
-c
-c
-c
 
-      endif
         if (ldimqm .and. lrsp .and. lclfld .and. lifetime) then
           call nga_scale_patch(g_rhs_im(ipm),blo,bhi,-4.0d0)
         end if

@@ -254,7 +254,7 @@ c !!! BGJ
 c     DIM/QM JEM
       if (use_dimqm) then
          call dimqm_used(rtdb,ldimqm)
-         call dimqm_getlrsp(rtdb,lrsp)
+         if (ldimqm) call dimqm_getlrsp(rtdb,lrsp)
       else
          ldimqm=.false.
          lrsp=.false.

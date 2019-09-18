@@ -1,5 +1,5 @@
       subroutine dimqm_indDipoles2(rtdb, nbf, geom, basis,
-     $                              g_dens, nDIM, g_muold)
+     $                              g_dens, nDIM)
 c     Determines the induced dipoles for the given density matrix 
 c     This version works for just static response
 c     Called from: dimqm_rohf.F
@@ -18,7 +18,6 @@ c------------------------ Input Variables --------------------------
       integer geom                ! geometry handle
       integer basis               ! basis set handle
       integer nDIM
-      integer g_muold
 c------------------------ Local variables ---------------------------
       double precision dx, dy, dz
       integer i3, n
@@ -124,7 +123,9 @@ c       Write induced dipoles to RTDB
           write(luout,*) dx, dy, dz
           write(luout,*) ''
         end if
-c
+        if(.not.rtdb_put(rtdb, 'dimqm:muind_'//direction(n), mt_dbl,
+     $                                 i3, dbl_mb(k_muind)))
+     $    call errquit('put dimqm:muind_p failed',1,RTDB_ERR)
       end do ! n = 1, 3
 c
 c     Clean up arrays
@@ -136,6 +137,5 @@ c     Clean up arrays
       stat = stat .and. ga_destroy(g_dens_comp)
       if(.not.stat)
      $  call errquit('dimqm_indDip2 failed clean up',1,GA_ERR)
-      write(luout,*) "End dimqm_indDip2"
 c
       end subroutine dimqm_indDipoles2

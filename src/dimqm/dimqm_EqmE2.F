@@ -35,14 +35,14 @@ c  to the DIM fields, which uses malloc array, but we want the global
 c  arrays for the dipoles and such for large DIM systems, so we copy
 c  into global array after solving. 
       ldebug = .true.
-      if (ldebug.and.id.eq.0) write(luout,*)'Starting EqmE2'
+c      if (ldebug.and.id.eq.0) write(luout,*)'Starting EqmE2'
       nOrder = 3*nDIM
       call hnd_elfcon_0(basis, geom, g_dens, xyz, nDIM, 
      $   fld, 1, .false., .false.)
       call ga_put(g_eqme, 1, nOrder, 1, 1, fld, 1)
       call ga_sync()
-      call ga_print(g_eqme)
-      if (ldebug.and.id.eq.0) write(luout,*)'Exiting EqmE2'
+c      call ga_print(g_eqme)
+c      if (ldebug.and.id.eq.0) write(luout,*)'Exiting EqmE2'
       end subroutine dimqm_EqmE2
 
 

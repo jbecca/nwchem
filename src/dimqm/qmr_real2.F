@@ -58,18 +58,18 @@ c     BLAS/LAPACK routines
 c
 c     Get node ID
       id = ga_nodeid()
-      if(id.eq.0.and.ldebug) then
-        write(LuOut,*) "Start QMR real routine"
-        call util_flush(LuOut)
-      end if
+c      if(id.eq.0.and.ldebug) then
+c        write(LuOut,*) "Start QMR real routine"
+c        call util_flush(LuOut)
+c      end if
 c     Check tolerances of the machine
       nrm_tol = dlamch('E') * TEN
       min_tol = SQRT(SQRT(dlamch('S')))
       max_tol = ONE / min_tol
       if (tol <= ZERO) tol = SQRT(dlamch('E'))
-      if(ldebug) then
-        if(id .eq. 0) write(LuOut,*) "Tol: ", tol
-      end if
+c      if(ldebug) then
+c        if(id .eq. 0) write(LuOut,*) "Tol: ", tol
+c      end if
 c
 c     Zero work arrays
       do i = 1, 6
@@ -214,16 +214,16 @@ c          g_work(:,6) = g_work(:,2) - g_work(:,6)
            call ga_sync()
            nrm_check = res_nrm
         else
-          if(ldebug) then
-            write(LuOut,*) "Res_nrm_upper_bound:", res_nrm_upper_bound
-          end if
+c          if(ldebug) then
+c            write(LuOut,*) "Res_nrm_upper_bound:", res_nrm_upper_bound
+c          end if
         end if
         time = util_timer() - time
-        if(ldebug) then
-          write(LuOut,*) "Iteration", niter
-          write(LuOut,*) "Time (s):", time
-          call util_flush(LuOut)
-        end if
+c        if(ldebug) then
+c          write(LuOut,*) "Iteration", niter
+c          write(LuOut,*) "Time (s):", time
+c          call util_flush(LuOut)
+c        end if
 c
 c       Check for convergece or termination.  Stop if:
 c         1. algorithm converged;
@@ -249,6 +249,6 @@ c     Put proper values into output variables
 c      call ga_get(g_work(1), 1, nLen, 1, 1, unknowns, 1)
       call ga_copy(g_work(1), g_fld)
 c      call ga_print(g_fld)
-      if(id.eq.0.and.ldebug) write(LuOut,*)
-     $   "End QMR Routine"
+c      if(id.eq.0.and.ldebug) write(LuOut,*)
+c     $   "End QMR Routine"
       end subroutine qmr_real2

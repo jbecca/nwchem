@@ -90,7 +90,6 @@ c     Input Variables
       integer nbf
       integer nfock
       integer g_dens
-      integer g_muold
 c
 c     Output Variables
       integer g_dim
@@ -102,67 +101,40 @@ c     Local Variables
       integer nDIM
       logical ldimqm
       logical lfirst
-      logical lrsp
-c
-c     Global Variables from dimqm.fh
-c
-c     logical ldimqm, lrsp, lfirst
-c     
-c
-      write(luout,*)'got here 3.1'
+      logical lrsp, ldimqm_go
+
       call dimqm_getnDIM(rtdb, nDIM)
       call dimqm_used(rtdb, ldimqm)
       call dimqm_getlrsp(rtdb, lrsp)
       call dimqm_getlfirst(rtdb, lfirst)
       call dimqm_get_debug(rtdb, ldebug)
       if (ldebug) write(luout,*)'starting dimqm_rohf_calcDIM'
-      ! Check to see DIM is on for response
-      if (ldimqm .and. lrsp) then
-
-        ! Pull in residual and check seeding status
-        if (.not.lfirst) then
-          if (.not.rtdb_get(rtdb, 'lkain:rmax', mt_dbl, 1, rmax))
-     $      call errquit('dimqm_rohf: rmax get failed', 1, RTDB_ERR)
-          call dimqm_check_dipoles(rtdb, 1.0d0, rmax)
-        end if
-        
-      write(luout,*)'got here 3.2'
-        ! Calculate DIM dipoles
-!  jbecca START
-! these used to use dimqm_on instead of ldimqm. It seems like the original
-! purpose of that variable was not used. If problems persue, change back
-        if (ldimqm) 
-        ! need to later add in different routine to handle FD response
-     $    call dimqm_indDipoles2(rtdb, nbf, geom, basis, 
-     $                           g_dens, nDIM, g_muold)
-        
-!        if (dimqm_on) call dimqm_indDipoles(rtdb, nbf, geom, basis,
-!     $                                      g_dens)
-      write(luout,*)'got here 3.3'
-!jbecca END
-
-        ! Build potential from dipoles
-        dims(1)  = nfock
-        dims(2)  = nbf
-        dims(3)  = nbf
-        chunk(1) = dims(1)
-        chunk(2) = -1
-        chunk(3) = -1
-        if (.not. nga_create (MT_DBL, 3, dims, 'dimqm:3ddim',chunk,
-     $                        g_dim))
-     $    call errquit('dimqm_rohf: could not allocate g_dim',555,
-     $                 GA_ERR)
-        call ga_zero(g_dim)  
-        write(luout,*)'got here 3.4'
-        call fock_dim(geom, nbf, basis, nfock, g_dim, 0, 1)
-        write(luout,*)'got here 3.5'
-        call ga_symmetrize(g_dim)
-        call ga_sync()
-        
-        if (.not. rtdb_put(rtdb, 'dimqm:g_dim', mt_int, 1, g_dim))
-     $    call errquit('dimqm_rohf: put g_dim failed', 1, RTDB_ERR)
+      ! Pull in residual and check seeding status
+      if (.not.lfirst) then
+        if (.not.rtdb_get(rtdb, 'lkain:rmax', mt_dbl, 1, rmax))
+     $    call errquit('dimqm_rohf: rmax get failed', 1, RTDB_ERR)
+c        call dimqm_check_dipoles(rtdb, 1.0d0, rmax)
       end if
-
+      ! Calculate DIM dipoles
+      call dimqm_indDipoles2(rtdb, nbf, geom, basis, 
+     $                         g_dens, nDIM)
+      
+      ! Build potential from dipoles
+      dims(1)  = nfock
+      dims(2)  = nbf
+      dims(3)  = nbf
+      chunk(1) = dims(1)
+      chunk(2) = -1
+      chunk(3) = -1
+      if (.not. nga_create (MT_DBL, 3, dims, 'dimqm:3ddim',chunk,
+     $                      g_dim))
+     $  call errquit('dimqm_rohf: could not allocate g_dim',555,
+     $               GA_ERR)
+      call ga_zero(g_dim)  
+      call fock_dim(rtdb, geom, nbf, basis, nfock, g_dim, 0, 1)
+      call ga_symmetrize(g_dim)
+      call ga_sync()
+      
       if (ldebug) write(luout,*)'ending dimqm_rohf_calcDIM'
       end subroutine dimqm_rohf_calcDIM
 

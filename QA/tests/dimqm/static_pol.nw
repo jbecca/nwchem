@@ -1,0 +1,32 @@
+
+echo
+start
+title "H2O on Ag"
+#print high
+geometry units angstrom nocenter noautoz
+ O                 8.77800          .0000000000         .0000000000
+ H                 9.30230          .0000000000         .7545655371
+ H                 9.30230          .0000000000        -.7545655371
+symmetry c1
+end
+
+basis spherical
+ * library 6-311G
+end
+
+driver
+ maxiter 100
+end
+
+dft
+ iterations 200
+ xc b3lyp
+ grid medium 
+end
+
+property
+ aoresponse
+end
+
+task dft property  
+

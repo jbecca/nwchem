@@ -595,11 +595,11 @@ c  jbecca END
 c  jbecca START
       if (use_dimqm) then
          call dimqm_used(rtdb,ldimqm)
-         call dimqm_getlclfld(rtdb,lclfld)
       else
          ldimqm=.false.
          lclfld=.false.
       endif
+      if (ldimqm) call dimqm_getlclfld(rtdb,lclfld)
 c      if (ldimqm .and. lclfld) then
 c        call dimqm_prep(rtdb, omega)
 c      end if

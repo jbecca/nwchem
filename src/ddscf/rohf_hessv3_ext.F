@@ -530,7 +530,7 @@ c     $Id$
       logical limag,lifetime
       logical debug
 c     DIM/QM JEM
-      integer g_x(ncomp), g_x_im(ncomp)
+      integer g_x(ncomp), g_x_im(ncomp), nDIM
       integer g_Ax(ncomp), g_Ax_im(ncomp)
       logical ldimqm
 c
@@ -720,6 +720,8 @@ c   DIM/QM JEM
       if (.not.rtdb_get(bgj_get_rtdb_handle(), 'dimqm:lrsp', MT_LOG,
      $                  1, ldimqm)) ldimqm = .false.
       if(ldimqm) then
+        write(*,*)'Here in rohf_hessv3_ext'
+        call dimqm_getnDIM(bgj_get_rtdb_handle(), nDIM)
 c       Transforming complex arrays to 2 real arrays to fit DIM structure
 c       This could be cleaned up with a substantial rework of dimqm_addop
         do ipm = 1, ncomp
@@ -760,8 +762,8 @@ c       This could be cleaned up with a substantial rework of dimqm_addop
      &                    nclosed,      ! in  : nr. occupied MOs
      &                    2)   ! in  : =1 -> re =2 -> im
         end do
-        call dimqm_addop(g_x, g_x_im, g_Ax, g_Ax_im,
-     &                   ncomp, limag, lifetime)
+        call dimqm_addop(bgj_get_rtdb_handle(),
+     &    g_x, g_x_im, g_Ax, g_Ax_im, ncomp, limag, lifetime, nDIM)
         do ipm = 1,ncomp
           call conv2complex4(g_Az1,     ! out: = history matrix complex
      &                       g_Ax(ipm), ! in : real      arr

@@ -29,7 +29,7 @@ dimqm
  Algorithm 1
  screen none
  tolerance 1.0d-7
- localfield
+ debug
 end
 
 dimpar

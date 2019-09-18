@@ -456,8 +456,9 @@ c     Jorge Garza/End
       endif
       use_dimqm = util_module_avail("dimqm")
       if (use_dimqm) then
-c         call dimqm_init(rtdb)
-         call dimqm_used(rtdb, ldimqm)
+         if (.not.rtdb_get(rtdb, 'dimqm:ldimqm', mt_log, 1, ldimqm))
+     $      ldimqm = .false.
+         write(luout,*)'ldimqm', ldimqm
          if (ldimqm) then
            call dimqm_getgo(rtdb, dimqm_go)
            call dimqm_getnDIM(rtdb, nDIM)
