@@ -175,7 +175,7 @@ c   Real +
      &                        g_dim_r(1)))
      &   call errquit('lclfld: could not allocate g_dim_r+',1,GA_ERR)
         call ga_zero(g_dim_r(1))
-        call fock_dim(geom, nbf, basis, 3, g_dim_r(1), 1, 1)
+        call fock_dim(rtdb, geom, nbf, basis, 3, g_dim_r(1), 1, 1)
         call ga_symmetrize(g_dim_r(1))
 c!   Real -
  !       if (.not. nga_create (MT_DBL, 3, dims, 'addop:dim_r-',chunk,
@@ -189,7 +189,7 @@ c   Imaginary +
      &                        g_dim_i(1)))
      &   call errquit('lclfld: could not allocate g_dim_i+',1,GA_ERR)
         call ga_zero(g_dim_i(1))
-        call fock_dim(geom, nbf, basis, 3, g_dim_i(1), 1, 2)
+        call fock_dim(rtdb, geom, nbf, basis, 3, g_dim_i(1), 1, 2)
         call ga_symmetrize(g_dim_i(1))
 c!   Imaginary -
  !       if (.not. nga_create (MT_DBL, 3, dims, 'addop:dim_i-',chunk,

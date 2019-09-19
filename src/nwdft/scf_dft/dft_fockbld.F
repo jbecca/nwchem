@@ -402,24 +402,18 @@ c     Calculate DIM potential and energy
 c     We calculate the DIM potential at each point from the total density
 c     This potential is used to perturb both alpha and beta spins, so only
 c     one call to dim_grid_quadv0 is needed
-      if (ga_nodeid() == 0) write(luout,*)'got here in fockbld 1'
       if (ldimqm .and. dimqm_go) then
-      if (ga_nodeid() == 0) write(luout,*)'got here in fockbld 2'
         if(.not.ga_duplicate(g_vxc(1), g_vdim, 'dim:1'))
      $    call errquit("dft_fockbld: can't create dim:1", 99, GA_ERR)
-      if (ga_nodeid() == 0) write(luout,*)'got here in fockbld 3'
         call ga_zero(g_vdim)
-      if (ga_nodeid() == 0) write(luout,*)'got here in fockbld 4'
         call dim_grid_quadv0(rtdb, g_vdim)
 c        call ga_dadd(1.d0, g_vxc(1), 1.d0, g_fock, g_fock)
-      if (ga_nodeid() == 0) write(luout,*)'got here in fockbld 5'
         Edim = ga_ddot(g_dens(1), g_vdim)
         if(ipol > 1) then
           Edim = Edim + ga_ddot(g_dens(2), g_vdim)
         end if
         call ga_sync()
       end if
-      if (ga_nodeid() == 0) write(luout,*)'got here in fockbld 11'
 c     
 c     == Compute the XC potential and energy ==
       g_vxc(1) = g_tmp

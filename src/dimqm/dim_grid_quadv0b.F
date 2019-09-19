@@ -4,8 +4,7 @@
      $                            cetobfr, ibf_ao, bas_cent_info,
      $                            bas_cset_info, docset, rchi_atom,
      $                            g_vdim, nmat, do_scf, do_cpks_l, l3d,
-     $                            ipm, imag, dimxyz, muind, nDIM, rtdb,
-     $                            lcpks)
+     $                            ipm, imag, dimxyz, muind, nDIM, rtdb)
 c
 c$Id: dim_grid_quadv0b.F 19821 2010-12-14 07:46:49Z d3y133 $
 c
@@ -49,7 +48,6 @@ c   Input Variables
       integer nmat ! Number of density matrices (number of perturbing directions)
       logical do_scf
       logical do_cpks_l
-      logical lcpks
       logical l3d
       integer ipm
       integer imag
@@ -144,7 +142,7 @@ c
 c      call dim_eval_fnl(rho, nqpts, qwght,
 c     &     dimxyz, qxyz, 
 c     $     nmat, ipm, imag, muind,nDIM, rtdb)
-      if (lcpks) then
+      if (do_cpks_l) then
             call dim_eval_fnl(rho, nqpts, qwght, dimxyz,
      &            qxyz, nmat, ipm, imag, muind, nDIM, rtdb)
       else

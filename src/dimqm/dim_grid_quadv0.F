@@ -93,12 +93,11 @@ c
       data dpm /'+', '-'/
       data dri /'r', 'i'/
       integer nDIM
-      logical ldebug, lcpks
+      logical ldebug
 
 c
       call dimqm_getnDIM(rtdb, nDIM)
 c      call dimqm_get_debug(rtdb, ldebug)
-      call dimqm_getlcpks(rtdb, lcpks)
       ldebug = .true.
       me = ga_nodeid()
       nproc = ga_nnodes()
@@ -333,7 +332,7 @@ c
      ,        dbl_mb(irchi_atom), g_vdim,
      ,        nmat, do_scf, do_cpks_l,
      ,        l3d, ipm, imag, dbl_mb(k_dimxyz),
-     $        dbl_mb(k_muind), nDIM, rtdb, lcpks)
+     $        dbl_mb(k_muind), nDIM, rtdb)
 c     
       
       if (.not.ma_chop_stack(lqxyz))

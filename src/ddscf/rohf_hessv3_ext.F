@@ -720,7 +720,6 @@ c   DIM/QM JEM
       if (.not.rtdb_get(bgj_get_rtdb_handle(), 'dimqm:lrsp', MT_LOG,
      $                  1, ldimqm)) ldimqm = .false.
       if(ldimqm) then
-        write(*,*)'Here in rohf_hessv3_ext'
         call dimqm_getnDIM(bgj_get_rtdb_handle(), nDIM)
 c       Transforming complex arrays to 2 real arrays to fit DIM structure
 c       This could be cleaned up with a substantial rework of dimqm_addop

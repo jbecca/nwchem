@@ -28,8 +28,6 @@ dimqm
  PIM
  Algorithm 1
  screen none
- tolerance 1.0d-7
- debug
 end
 
 dimpar
