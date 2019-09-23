@@ -871,6 +871,9 @@ ccccccccccccccc This code does NOT work for open shell!!!!!ccccccccccccccccc
      &         shell_fock_build2,getreorim,
      &         update_gz_reorim,
      &         update_gz_reorim1 
+
+      logical ldimqm
+      integer nDIM
       double precision one,zero,mone,four,half,mhalf,two,mtwo
       double precision itol_floor, itol_ceil
       parameter(itol_floor=1.d-15, itol_ceil=1.d-3)
@@ -1081,6 +1084,22 @@ c ---- Copy g_z --> g_x_reim ------ END
      &            g_pmats, ! in   : scratch GA array
      &            limag)   ! in   : =.true. imaginary comp. exists
 
+
+!     ! Add DIM/QM code here. Calculate image dipoles, construct perturbation, add to fock matrix. 
+!
+      if (.not.rtdb_get(bgj_get_rtdb_handle(), 'dimqm:lrsp', MT_LOG,
+     $                  1, ldimqm)) ldimqm = .false.
+
+      if (ldimqm) then
+            call dimqm_getnDIM(bgj_get_rtdb_handle(), nDIM)
+            call dimqm_addop_cmplx(
+     &            bgj_get_rtdb_handle(),
+     &            g_fock,
+     &            ncomp,
+     &            limag,
+     &            lifetime,
+     &            nDIM)
+      endif
 c ------- Remove GA arrays:
       do ipm = 1,ncomp
        if (.not.ga_destroy(g_pmats(ipm))) call errquit(

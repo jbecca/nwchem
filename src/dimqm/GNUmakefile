@@ -4,26 +4,57 @@
 #constants.o : constants.f90
 #	      $(FC) -c constants.f90
 
-   OBJ = dimqm_input.o dimpar_input.o dimqm_prep.o \
-	 dimqm_main.o dimqm_polarizability.o dimqm_f2d.o dimqm_iterative.o \
-	 qmr_real.o qmr_complex.o matvecReal.o matvecComplex.o \
-         dimqm_EqmE.o t2.o \
-         pphilo.o dimqm_fldpot.o dimqm_EqmN.o \
-         dimqm_printAtomicDipoles.o dimqm_energy.o \
+   OBJ = dimqm_input.o \
+         dimpar_input.o \
+         dimqm_prep.o \
+	      dimqm_main.o \
+         dimqm_polarizability.o \
+         dimqm_f2d.o \
+         dimqm_iterative.o \
+	      qmr_real.o \
+         qmr_complex.o \
+         matvecReal.o \
+         matvecComplex.o \
+         dimqm_EqmE.o \
+         t2.o \
+         pphilo.o \
+         dimqm_fldpot.o \
+         dimqm_EqmN.o \
+         dimqm_printAtomicDipoles.o \
+         dimqm_energy.o \
          dimqm_printDipole.o \
          dimqm_indDipoles.o \
          dimqm_indDipoles2.o \
-         dimqm_printAtoms.o dimqm_addop.o dimqm_lclfld.o \
+         dimqm_printAtoms.o \
+         dimqm_addop.o \
+         dimqm_lclfld.o \
          seeded_qmr_real.o \
          qmr_seed_real.o \
-         qmr_seed_complex.o seeded_qmr_complex.o \
-         CubicSpline.o dim_fock_xc.o dimpar_input2.o \
-         dim_tabcd.o dim_eval_fnl.o \
-         dim_grid_quadv0.o dim_grid_quadv0a.o dim_grid_quadv0b.o \
-         dimqm_input2.o dimpar_input2.o dimqm_main2.o dimqm_fldpot2.o\
-         dimqm_direct.o qmr_real2.o dim_eval_fnl2.o\
-         dimqm_f2d2.o dimqm_iterative2.o dimqm_EqmE2.o dimqm_EqmN2.o\
-         dimqm_seeding.o dimqm_rohf.o dimqm_util.o dimqm_addop_uhf.o
+         qmr_seed_complex.o \
+         seeded_qmr_complex.o \
+         CubicSpline.o \
+         dim_fock_xc.o \
+         dimpar_input2.o \
+         dim_tabcd.o \
+         dim_eval_fnl.o \
+         dim_grid_quadv0.o \
+         dim_grid_quadv0a.o \
+         dim_grid_quadv0b.o \
+         dimqm_input2.o \
+         dimpar_input2.o \
+         dimqm_main2.o \
+         dimqm_fldpot2.o\
+         qmr_real2.o \
+         dim_eval_fnl2.o\
+         dimqm_f2d2.o \
+         dimqm_iterative2.o \
+         dimqm_EqmE2.o \
+         dimqm_EqmN2.o\
+         dimqm_seeding.o \
+         dimqm_rohf.o \
+         dimqm_util.o \
+         dimqm_addop_uhf.o\
+         dimqm_addop_cmplx.o
 
    LIBRARY = libdimqm.a
 #
@@ -34,7 +65,7 @@
 
    LIB_INCLUDES = -I../nwdft/include -I../ddscf -I../util -I../nwdft/grid -I../NWints/hondo
 
-USES_BLAS = qmr_real.F dimqm_main.F 
+USES_BLAS = qmr_real.F dimqm_main.F qmr_complex.F 
 
 HEADERS = dimqm_constants.fh
 
