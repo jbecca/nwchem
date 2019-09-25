@@ -11,6 +11,7 @@ c     Called from: dimqm_rohf.F
 #include "global.fh"
 #include "dimqm_constants.fh"
 #include "geom.fh"
+#include "dimqm.fh"
 c------------------------ Input Variables --------------------------
       integer rtdb                ! RTDB handle
       integer g_dens              ! perturbed density matrix handle
@@ -23,8 +24,8 @@ c------------------------ Local variables ---------------------------
       integer i3, n
       integer l_fld, k_fld
       integer l_dimxyz, k_dimxyz
-      integer l_muind, k_muind
-      integer l_muold, k_muold
+c      integer l_muind, k_muind
+c      integer l_muold, k_muold
       integer l_eqme, k_eqme
       integer g_dens_comp
       integer alo(3), ahi(3)

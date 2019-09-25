@@ -8,7 +8,9 @@
 #include "nwc_const.fh"
 #include "mafdecls.fh"
 #include "global.fh"
+#include "dimqm.fh"
 #include "dimqm_constants.fh"
+#include "msgids.fh"
 c
 c     Input module for DIM parameters
 c     -------------------------------
@@ -311,6 +313,8 @@ c     Check number of atoms specified versus number read
      $   call errquit("atoms read doesn't match atoms specified",
      $                 1, INPUT_ERR)
 c
+      nDIMAtoms = nDIM
+      call ga_brdcast(msg_dimqm, nDIMAtoms, 1, 0)
       nOrder = 3 * nDIM
 c
 c   Convert Units

@@ -1,5 +1,5 @@
       subroutine dimqm_main2(rtdb, basis, geom, g_dens, lastcy,
-     $                           nDIM, g_muold)
+     $                           nDIM)
 c     Author: Jeff Becca
 c     called from: nwdft/scf_dft/dft_scf.F
 c     subroutines called:  dimqm_EqmN2, dimqm_EqmE2, dimqm_f2d2
@@ -13,6 +13,7 @@ c ----------------------------------------------------------------------
 #include "global.fh"
 #include "rtdb.fh"
 #include "stdio.fh"
+#include "dimqm.fh"
 c------------------------- Input Variables -----------------------------
       integer rtdb      ! RTDB handle
       integer basis     ! Basis set handle
@@ -20,7 +21,6 @@ c------------------------- Input Variables -----------------------------
       integer g_dens    ! QM density handle (SHOULD BE TOTAL DENS HERE)
       logical lastcy    ! whether or not this is the last DIM cycle
       integer nDIM      ! number of DIM atoms in calculation
-      integer g_muold
 c------------------------ Local Variables ------------------------------
       logical ldebug
       logical stat
@@ -30,8 +30,8 @@ c------------------------ Local Variables ------------------------------
       integer l_eqmn, k_eqmn
       integer l_eqme, k_eqme
       integer l_etot, k_etot
-      integer l_muold, k_muold
-      integer l_muind, k_muind
+C      integer l_muold, k_muold
+C      integer l_muind, k_muind
       double precision edimqm, dimqm_energy2
       double precision maxerr
       double precision dimtol
@@ -51,7 +51,7 @@ c  of a way to write GA to disk and read easily
       if (ldebug.and.(id.eq.0)) write(luout,*)'starting dimqm_main2'
       call dimqm_getlfirst(rtdb, lfirst)
       nOrder = 3*nDIM
-      if (lfirst) call ga_zero(g_muold)
+c      if (lfirst) call ga_zero(g_muold)
 c ----------------- Initialize GA's used in DIM cycle ------------------
 c      if(.not.ga_create(mt_dbl,3,nDIM,'g_muind',0,0,g_muind))
 c     $   call errquit('dimqm_main2: create g_muind failed',0,GA_ERR)
@@ -82,9 +82,9 @@ c     $   1,MA_ERR)
 c      if(.not.ma_alloc_get(mt_dbl,3*nDIM,'dimqm:muold',l_muold,
 c     $   k_muold)) call errquit('dimqm_main2: malloc k_muold failed',
 c     $   1,MA_ERR)
-      if(.not.ma_alloc_get(mt_dbl,3*nDIM,'dimqm:muind',l_muind,
-     $   k_muind)) call errquit('dimqm_main2: malloc k_muind failed',
-     $   1,MA_ERR)
+c      if(.not.ma_alloc_get(mt_dbl,3*nDIM,'dimqm:muind',l_muind,
+c     $   k_muind)) call errquit('dimqm_main2: malloc k_muind failed',
+c     $   1,MA_ERR)
 c  get and allocate coords
          if(.not.rtdb_get(rtdb,'dimpar:coords',mt_dbl,
      $      3*nDIM,dbl_mb(k_dimxyz))) call errquit
@@ -100,14 +100,13 @@ c  Call EqmE to get field contributions due to QM e-
 c      if(id.eq.0) write(luout,*)'back from eqme2'
 c  Add eqme and eqmn and place into etot
       call ga_add(1.0d0, g_eqme, 1.0d0, g_eqmn, g_etot)
-      call dimqm_getlfirst(rtdb, lfirst)
-      if(.not.lfirst) then
-         if(.not.rtdb_get(rtdb, 'dimqm:muind',mt_dbl,
-     $                                    3*nDIM, dbl_mb(k_muold)))
-     $      call errquit('main2: old dipoles not read',1,RTDB_ERR)
-      else
-         call dfill (3*nDIM, 0.0d0, dbl_mb(k_muold),1)
-      endif
+    !  if(.not.lfirst) then
+    !     if(.not.rtdb_get(rtdb, 'dimqm:muind',mt_dbl,
+    ! $                                    3*nDIM, dbl_mb(k_muold)))
+    ! $      call errquit('main2: old dipoles not read',1,RTDB_ERR)
+    !  else
+    !     call dfill (3*nDIM, 0.0d0, dbl_mb(k_muold),1)
+    !  endif
 c
 c      call dimqm_f2d(rtdb, Etot, muind, muold, dimxyz, 1, 'g', nDIM)
 c  ------------------------- Things we need from calc ------------------
@@ -126,6 +125,8 @@ c  Only thing f2d2 should need is array for ind. dip. (g_muind),
 c  total Efield (g_etot), and DIM coordinates (k_dimxyz)
 c  
 c  ---------------------------------------------------------------------
+      write(luout,*)'l_muind: ', l_muind
+      write(luout,*)'k_muind: ', k_muind
       call dimqm_iterative2(rtdb, g_etot, dbl_mb(k_dimxyz), nDIM)
 c  ***** on exit, g_etot now holds muind *****
 ccc Calculate interaction energy and put it in rtdb
@@ -153,7 +154,7 @@ c      endif
 c  TODO: Check that dipoles are converged
 
 c Place this cycle's dipoles into g_muold
-      call ga_copy(g_etot, g_muold)
+c      call ga_copy(g_etot, g_muold)
 
 cc TODO  gather some nice info for printing out the induced dipoles TODO
 cc         
@@ -169,12 +170,12 @@ ccc      muold = muind
 cc      do i = 1, nDIM
 cc         dbl_mb(k_muold+(i-1)) = dbl_mb(k_muind+(i-1))
 cc      enddo
-c      call dimqm_setlfirst(rtdb,.false.)
+      call dimqm_setlfirst(rtdb,.false.)
       stat = .true.
 c      status = status.and.ma_free_heap(l_eqmn)
       stat = stat.and.ma_free_heap(l_eqme)
 c      status = status.and.ma_free_heap(l_etot)
-      stat = stat.and.ma_free_heap(l_muind)
+c      stat = stat.and.ma_free_heap(l_muind)
 c      status = status.and.ma_free_heap(l_muold)
       stat = stat.and.ma_chop_stack(l_dimxyz)
       stat = stat.and.ga_destroy(g_eqme)

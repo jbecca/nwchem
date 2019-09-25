@@ -17,6 +17,7 @@ c  ==================================================================
 #include "testutil.fh"
 #include "util.fh"
 #include "dimqm_constants.fh"
+#include "dimqm.fh"
 c
 c     Input variables
       integer rtdb        ! RTDB handle
@@ -25,8 +26,8 @@ c
 c     MA handles
       integer k_fld, l_fld
       integer l_dimxyz, k_dimxyz ! DIM coordinates handles
-      integer l_muind,  k_muind  ! DIM dipoles handles
-      integer l_muold,  k_muold
+c      integer l_muind,  k_muind  ! DIM dipoles handles
+c      integer l_muold,  k_muold
 c
 c     Local variables
       integer idir, m, i3
@@ -72,12 +73,12 @@ c     Coords
      $   call errquit('dimpar:coords rtdb get failed',1,RTDB_ERR)
 c
 c     Induced Dipoles
-      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dim muind',
-     $                                            l_muind,k_muind))
-     $   call errquit('dimqm_pol malloc k_muind failed',1,MA_ERR)
-      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dim:muold',
-     $                                            l_muold,k_muold))
-     $   call errquit('dimqm_pol malloc k_muind failed',1,MA_ERR)
+c      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dim muind',
+c     $                                            l_muind,k_muind))
+c     $   call errquit('dimqm_pol malloc k_muind failed',1,MA_ERR)
+c      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dim:muold',
+c     $                                            l_muold,k_muold))
+c     $   call errquit('dimqm_pol malloc k_muind failed',1,MA_ERR)
 c
 c     Applied Field
       if(.not.ma_push_get(mt_dbl,i3*icmplx,'dim fld',l_fld,k_fld))

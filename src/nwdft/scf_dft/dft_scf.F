@@ -218,10 +218,10 @@ cc     AJL/Begin/FDE
       integer g_vxc_fde(4)
       integer g_xcinv_fde
       integer g_dens_fde(2)
-      logical ldimqm, dimqm_go
+      logical ldimqm, dimqm_go, lfirst
       double precision edimqm
       double precision eelec
-      integer nDIM, g_muold
+      integer nDIM
 cc     AJL/End
 c
       gotsmear(ss)=abs(ss).gt.1d-9
@@ -464,8 +464,6 @@ c     Jorge Garza/End
            call dimqm_getnDIM(rtdb, nDIM)
            write(luout,*)'ldimqm',ldimqm
            write(luout,*)'dimqm_go',dimqm_go
-           if(.not.ga_create(mt_dbl,3*nDIM,1,'dimqm:muold',0,0,g_muold))
-     $         call errquit('dim: create g_muold failed',1,GA_ERR)
          endif
       else
          ldimqm=.false.
@@ -1149,9 +1147,11 @@ c     Calculate DIM/QM dipoles
 c     We use the total density to calculate the dipoles.
 c
       if(ldimqm .and. dimqm_go) then
+        lfirst = .false. 
+        call dimqm_getlfirst(rtdb, lfirst)
+        if (lfirst) call dimqm_init(rtdb, 0)
 c        call dimqm_main(rtdb, ao_bas_han, geom, g_dens, .false.,nDIM)
-        call dimqm_main2(rtdb, ao_bas_han, geom, g_dens, .false.,nDIM,
-     $                        g_muold)
+        call dimqm_main2(rtdb, ao_bas_han, geom, g_dens, .false.,nDIM)
       end if
 c
 c     Determine HOMO energy (for Zhan-Nichols-Dixon AC)
@@ -2121,8 +2121,9 @@ c     Final DIM dipoles
 c
       if (ldimqm) then
 c        call dimqm_main(rtdb, ao_bas_han, geom, g_dens, .true., nDIM)
-        call dimqm_main2(rtdb, ao_bas_han, geom, g_dens, .true., nDIM,
-     $                        g_muold)
+        call dimqm_main2(rtdb, ao_bas_han, geom, g_dens, .true., nDIM)
+
+        call dimqm_tidy(rtdb)
       end if
 
 c

@@ -30,7 +30,7 @@ c     Ouput Variables
 c
 c     Local Variables
       double precision Edim
-      integer nDIM, g_muold
+      integer nDIM
       logical lfirst
 c      
 c     Global Variables from dimqm.fh
@@ -48,17 +48,13 @@ c     since these arrays won't be needed in response.
       call dimqm_getnDIM(rtdb,nDIM)
 c while g_muold isn't used, for this single cycle run, if it is not
 c created, segfaults happen. TODO: find better way for this to work
-      if(.not.ga_create(mt_dbl, 3*nDIM,1,'dimqm_muold',0,0,g_muold))
-     $   call errquit('dim: create g_muold failed',1,GA_ERR)
-      call dimqm_main2(rtdb, basis, geom, g_dens, .true.,nDIM,g_muold)
+      call dimqm_main2(rtdb, basis, geom, g_dens, .true.,nDIM)
       if (.not.ga_create(MT_DBL, nbf, nbf, 'DIM FOCK', -1, -1, g_dim))
      $  call errquit('dimqm_rohf_wrap: create dim fock failed', 1,
      $               GA_ERR)
       call ga_zero(g_dim)
       Edim = 0.0d0
       call dim_grid_quadv0(rtdb, g_dim)
-      if(.not. ga_destroy(g_muold)) call errquit('dim:destroy g_muold
-     $      failed',0,GA_ERR)
 
       write(luout,*)'Ending dimqm_rohf_wrap'
       end subroutine dimqm_rohf_wrap

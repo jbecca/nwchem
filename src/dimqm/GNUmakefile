@@ -54,7 +54,9 @@
          dimqm_rohf.o \
          dimqm_util.o \
          dimqm_addop_uhf.o\
-         dimqm_addop_cmplx.o
+         dimqm_addop_cmplx.o\
+         dimqm_init.o\
+         dimqm_tidy.o
 
    LIBRARY = libdimqm.a
 #
@@ -67,7 +69,7 @@
 
 USES_BLAS = qmr_real.F dimqm_main.F qmr_complex.F 
 
-HEADERS = dimqm_constants.fh
+HEADERS = dimqm_constants.fh dimqm.fh
 
 include ../config/makefile.h
 include ../config/makelib.h

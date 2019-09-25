@@ -1,4 +1,6 @@
       subroutine dimqm_addop_cmplx(    rtdb,
+     $                                  geom,
+     $                                  basis,
      $                                  g_fock, 
      $                                  ncomp, 
      $                                  limag, 
@@ -20,10 +22,10 @@ c  ==================================================================
 #include "dimqm.fh"
 #include "geom.fh"
 #include "crohf.fh"
-#include "cscf.fh"
+c #include "cscf.fh"
 c
 c     Input Variables
-      integer rtdb
+      integer rtdb, geom, basis
       integer g_fock(ncomp)   ! A matrix handle (complex) [IN]
       integer ncomp
       logical limag        ! Imaginary perturbation?   [IN]
@@ -75,43 +77,8 @@ c      double precision screen(nDIM)
       integer id
 c
       id = ga_nodeid()
-
-      nvir = nmo - nclosed - nopen
-      voff = nclosed + nopen + 1
-!      nmul = 1
-!      if (npol .eq. 2) numl = 2
-!      if (lifetime) then
-!        nset   = 2
-!        nblock = 4
-!      else
-!        nset   = 1
-!        nblock = 2
-!      end if
-
       i3 = nDIM * 3
-      g_tmp1 = ga_create_atom_blocked(geom, basis, 'dim_addop: tmp1')
-      g_tmp2 = ga_create_atom_blocked(geom, basis, 'dim_addop: tmp2')
-
-      dims(1) = nbf
-      dims(2) = nbf
-      chunk(1) = dims(1)
-      chunk(2) = -1
-c
-      dims(1) = nbf
-      dims(2) = nbf
-      dims(3) = nbf
-      chunk(1) = dims(1)
-      chunk(2) = -1
-      chunk(3) = -1
-
-      alo(2) = 1
-      ahi(2) = nbf
-      alo(3) = 1
-      ahi(3) = nbf
-      blo(1) = 1
-      bhi(1) = nbf
-      blo(2) = 1
-      bhi(2) = nbf
+C      g_tmp1 = ga_create_atom_blocked(geom, basis, 'dim_addop: tmp1')
 c
 c   Allocate new arrays
 c      if(.not.ma_push_get(mt_dbl,i3*2,'dimrsp:fld',l_fld,k_fld))

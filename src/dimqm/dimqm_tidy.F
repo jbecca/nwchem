@@ -1,13 +1,21 @@
-      subroutine dimqm_tidy()
+      subroutine dimqm_tidy(rtdb)
+c     clean up the allocated arrays and variables.
       implicit none
-#include "dimqm.fh"
 #include "errquit.fh"
+#include "mafdecls.fh"
 #include "global.fh"
-      dimqm_seeded = .false.
-      xyz_seeded = .false.
-c     Destroy diagonal array
-      if(.not. ga_destroy(g_DIM_diag))
-     $ call errquit("destroy DIM diag failed", 1, GA_ERR)
-      
+#include "rtdb.fh"
+#include "stdio.fh"
+#include "dimqm.fh"
 
-      end subroutine dimqm_tidy
+      integer rtdb
+      logical status
+
+
+      status = .true.
+        status = status .and. (ma_free_heap(l_muind))
+        status = status .and. (ma_free_heap(l_muold))
+      if (.not. status)
+     $     call errquit('dimqm_init: MA free failed', 1, MA_ERR)
+
+      end
