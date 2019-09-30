@@ -56,7 +56,9 @@
          dimqm_addop_uhf.o\
          dimqm_addop_cmplx.o\
          dimqm_init.o\
-         dimqm_tidy.o
+         dimqm_tidy.o\
+         dimqm_create.o\
+         dimqm_destroy.o
 
    LIBRARY = libdimqm.a
 #

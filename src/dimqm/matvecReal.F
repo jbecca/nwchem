@@ -62,8 +62,8 @@ c      Determine chunk to be done on this node
 c      call pphilo(id, nDIM, mLo, mUp, mOnNode)
 c
 c      Pull values from RTDB and GAs
-      stat = rtdb_get(rtdb, 'dimpar:sPol', mt_dbl, nDIMTypes, sPol)
-      stat = rtdb_get(rtdb, 'dimpar:typeindex', mt_int, nDIM, tx)
+      stat = rtdb_get(rtdb, 'dimqm:spol', mt_dbl, nDIMTypes, sPol)
+      stat = rtdb_get(rtdb, 'dimqm:typeindex', mt_int, nDIM, tx)
       call ga_init_fence()
       call ga_get(g_DIM_diag_real, 1, nOrder, 1, 1, diagS, 1)
       call ga_get(g_vec, 1, nOrder, 1, 1, vec, 1)

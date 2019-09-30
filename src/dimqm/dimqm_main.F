@@ -84,7 +84,7 @@ c
       end if
 c
 c      Read in coords from RTDB
-      if(.not. rtdb_get(rtdb,'dimpar:coords',mt_dbl,i3,dimxyz))
+      if(.not. rtdb_get(rtdb,'dimqm:coords',mt_dbl,i3,dimxyz))
      $   call errquit('dimqm:xyz rtdb get failed',1,RTDB_ERR)
       if(id.eq.0.and.ldebug) then
         write(luout,*) "Pulled coords"
@@ -290,7 +290,7 @@ c      Last cycle only
           write(luout,*) ""
 
 c         write(luout,*)'ndimtypes1', nDIMTypes
-         if(.not.rtdb_get(rtdb,'dimpar:ndimtypes',mt_int,1,nDIMTypes))
+         if(.not.rtdb_get(rtdb,'dimqm:ndimtypes',mt_int,1,nDIMTypes))
      $   call errquit('dimqm_main:get dimtypes failed',1,RTDB_ERR)
          write(luout,*)'ndimtypes2', nDIMTypes
 c        Calculate energy terms

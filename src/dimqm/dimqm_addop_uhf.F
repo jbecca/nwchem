@@ -33,6 +33,8 @@ c
 #include "geom.fh"
 #include "crohf.fh"
 #include "cscf.fh"
+#include "dimqm.fh"
+
 c
 c     Input Variables
       integer rtdb
@@ -51,7 +53,7 @@ c     Local variables
       integer g_tmp1, g_tmp2, g_dcv
 c      integer l_dimxyz, k_dimxyz
       double precision dimxyz(3, nDIM)
-c      integer l_muind, k_muind
+      integer l_muind, k_muind
       double precision muind(3, nDIM, 2)
       integer dims(3), chunk(3)
       character*(255) cstemp
@@ -114,15 +116,15 @@ c   Allocate new arrays
 c      if(.not.ma_push_get(mt_dbl,i3*2,'dimrsp:fld',l_fld,k_fld))
 c     $  call errquit('malloc dimrsp:fld failed',1,MA_ERR)
 c
-c      if(.not.ma_push_get(mt_dbl,i3*2,'dimrsp:muind',
-c     $                                            l_muind,k_muind))
-c     $  call errquit('malloc dimrsp:muind failed',1,MA_ERR)
+      if(.not.ma_push_get(mt_dbl,i3*2,'dimrsp:muind',
+     $                                            l_muind,k_muind))
+     $  call errquit('malloc dimrsp:muind failed',1,MA_ERR)
 c
 c      if(.not.ma_push_get(mt_dbl,i3,'dimrsp:xyz',l_dimxyz,k_dimxyz))
 c     $  call errquit('malloc dimrsp:xyz failed',1,MA_ERR)
 c
-      if(.not.rtdb_get(rtdb,'dimpar:coords', mt_dbl, i3, dimxyz))
-     $  call errquit('get dimpar:coords failed', 1, RTDB_ERR)
+      if(.not.rtdb_get(rtdb,'dimqm:coords', mt_dbl, i3, dimxyz))
+     $  call errquit('get dimqm:coords failed', 1, RTDB_ERR)
 c
       g_dens_comp_r = ga_create_atom_blocked(geom,basis,
      $                          'real density matrix comp')
@@ -641,8 +643,8 @@ c
 c      if(.not.ma_push_get(mt_dbl,i3,'dimrsp:xyz',l_dimxyz,k_dimxyz))
 c     $  call errquit('malloc dimrsp:xyz failed',1,MA_ERR)
 c
-      if(.not.rtdb_get(rtdb,'dimpar:coords', mt_dbl, i3, dimxyz))
-     $  call errquit('get dimpar:coords failed', 1, RTDB_ERR)
+      if(.not.rtdb_get(rtdb,'dimqm:coords', mt_dbl, i3, dimxyz))
+     $  call errquit('get dimqm:coords failed', 1, RTDB_ERR)
 c
       g_dens_comp_r = ga_create_atom_blocked(geom,basis,
      $                          'real density matrix comp')

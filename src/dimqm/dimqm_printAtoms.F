@@ -33,10 +33,10 @@ c   Allocate Arrays
 c   ===============
 c
 c   Read in atom names
-      if(.not.rtdb_get(rtdb,'dimpar:name',mt_byte,nDIMTypes*2,
+      if(.not.rtdb_get(rtdb,'dimqm:name',mt_byte,nDIMTypes*2,
      $                 elements))
      $  call errquit('dimqm_print get names failed',1,RTDB_ERR)
-      if(.not.rtdb_get(rtdb,'dimpar:typeindex',mt_int,nDIM,tx))
+      if(.not.rtdb_get(rtdb,'dimqm:typeindex',mt_int,nDIM,tx))
      $  call errquit('dimqm_print get tx failed',1,RTDB_ERR)
       write(luout,*) "Elements", elements
       dd = 

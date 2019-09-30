@@ -24,8 +24,8 @@ c------------------------ Local variables ---------------------------
       integer i3, n
       integer l_fld, k_fld
       integer l_dimxyz, k_dimxyz
-c      integer l_muind, k_muind
-c      integer l_muold, k_muold
+      integer l_muind, k_muind
+      integer l_muold, k_muold
       integer l_eqme, k_eqme
       integer g_dens_comp
       integer alo(3), ahi(3)
@@ -61,7 +61,7 @@ c
       if(.not.ma_alloc_get(mt_dbl,3*nDIM,'dimqm:eqme',l_eqme,
      $   k_eqme)) call errquit('dimqm_main2: malloc k_eqme failed',
      $   1,MA_ERR)
-      if(.not.rtdb_get(rtdb,'dimpar:coords',mt_dbl,
+      if(.not.rtdb_get(rtdb,'dimqm:coords',mt_dbl,
      $      3*nDIM,dbl_mb(k_dimxyz))) call errquit
      $      ('dimmain2: xyz rtdb get failed',1,RTDB_ERR)
 c      call dimqm_get_noseed(rtdb, dimqm_noseed)

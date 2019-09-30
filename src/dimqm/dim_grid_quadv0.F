@@ -43,6 +43,7 @@ c
 #include "rtdb.fh"
 #include "dft2drv.fh"
 #include "steric.fh"
+#include "dimqm.fh"
 c
       logical rtdb_status       
       logical grid_reopen
@@ -68,6 +69,7 @@ c
 
       double precision nelec
 c
+      integer k_muind, l_muind
       integer libf_ao,iibf_ao,irqbuf,lrqbuf,lbp,ibp,
      .     irchi_atom,irdelchi_atom,lrchi_atom,lrdelchi_atom
       integer iqs,lqs,nqlen,mxnrad,
@@ -85,7 +87,6 @@ c
       double precision pstrace  ! a measure of the total charge
       integer i3, idir
       integer l_dimxyz, k_dimxyz
-      integer l_muind,  k_muind
       character*(1) direction(3)
       character*(1) dpm(2)
       character*(1) dri(2)
@@ -279,7 +280,7 @@ c     Allocate and read in DIM coordinates
       if(.not.ma_push_get(mt_dbl,i3,'dimqm xyz',l_dimxyz,k_dimxyz))
      $   call errquit('dimqm_main malloc k_xyz failed',1,MA_ERR)
 c   Read in coords from RTDB
-      if(.not. rtdb_get(rtdb,'dimpar:coords',mt_dbl,i3,
+      if(.not. rtdb_get(rtdb,'dimqm:coords',mt_dbl,i3,
      $                  dbl_mb(k_dimxyz)))
      $   call errquit('dimqm:xyz rtdb get failed',1,RTDB_ERR)
 c

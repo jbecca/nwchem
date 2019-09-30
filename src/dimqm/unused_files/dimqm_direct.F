@@ -40,18 +40,18 @@ c------------------------- Local Variables -----------------------------
       id = ga_nodeid()
       nOrder = 3*nDIM
 
-      if(.not. rtdb_get(rtdb,'dimpar:sPol', mt_dbl, nDIMTypes, sPol))
-     $  call errquit('dimpar:sPol rtdb get failed', 0, RTDB_ERR)
-      if(.not. rtdb_get(rtdb,'dimpar:typeindex', mt_int, nDIM, tx))
+      if(.not. rtdb_get(rtdb,'dimqm:spol', mt_dbl, nDIMTypes, sPol))
+     $  call errquit('dimqm:spol rtdb get failed', 0, RTDB_ERR)
+      if(.not. rtdb_get(rtdb,'dimqm:typeindex', mt_int, nDIM, tx))
      $  call errquit('dimpar:type index rtdb get failed', 0, RTDB_ERR)
-      if(.not. rtdb_get(rtdb,'dimpar:bound', mt_dbl, nDIMTypes, bound))
-     $  call errquit('dimpar:bound rtdb get failed', 0, RTDB_ERR)
-      if(.not. rtdb_get(rtdb,'dimpar:drude', mt_dbl, nDIMTypes*2,
+      if(.not. rtdb_get(rtdb,'dimqm:bound', mt_dbl, nDIMTypes, bound))
+     $  call errquit('dimqm:bound rtdb get failed', 0, RTDB_ERR)
+      if(.not. rtdb_get(rtdb,'dimqm:drude', mt_dbl, nDIMTypes*2,
      $                                    drudeterms))
-     $  call errquit('dimpar:drude rtdb get failed', 0, RTDB_ERR)
-      if(.not. rtdb_get(rtdb,'dimpar:hasexp', mt_log, nDIMTypes,
+     $  call errquit('dimqm:drude rtdb get failed', 0, RTDB_ERR)
+      if(.not. rtdb_get(rtdb,'dimqm:hasexp', mt_log, nDIMTypes,
      $                                    hasExpDie))
-     $  call errquit('dimpar:hasexp rtdb get failed', 0, RTDB_ERR)
+     $  call errquit('dimqm:hasexp rtdb get failed', 0, RTDB_ERR)
 
       if(.not.ga_create(mt_dbl, nOrder, nOrder, 'dimqm:int_mat', 
      $   nOrder, -1, g_int_mat)) call errquit(

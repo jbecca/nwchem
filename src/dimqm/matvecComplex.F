@@ -64,8 +64,8 @@ c      Determine chunk to be done on this node
       call pphilo(id, nDIM, mLo, mUp, mOnNode)
 c
 c      Fill arrays
-      stat = rtdb_get(rtdb, 'dimpar:sPol', mt_dbl, nDIMTypes, sPol)
-      stat = rtdb_get(rtdb, 'dimpar:typeindex', mt_int, nDIM, tx)
+      stat = rtdb_get(rtdb, 'dimqm:spol', mt_dbl, nDIMTypes, sPol)
+      stat = rtdb_get(rtdb, 'dimqm:typeindex', mt_int, nDIM, tx)
       call ga_get(g_dim_diag_cplx, 1, nOrder, 1, 1, diagFD, 1)
       call ga_get(g_vec, 1, nOrder, 1, 1, vec, 1)
       call ga_sync()

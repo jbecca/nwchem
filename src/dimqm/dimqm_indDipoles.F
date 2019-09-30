@@ -84,8 +84,8 @@ c
 c      if(.not.ma_push_get(mt_dbl,i3,'dimrsp:xyz',l_dimxyz,k_dimxyz))
 c     $  call errquit('malloc dimrsp:xyz failed',1,MA_ERR)
 c
-      if(.not.rtdb_get(rtdb, 'dimpar:coords', mt_dbl, i3, dimxyz))
-     $  call errquit('get dimpar:coords failed', 1, RTDB_ERR)
+      if(.not.rtdb_get(rtdb, 'dimqm:coords', mt_dbl, i3, dimxyz))
+     $  call errquit('get dimqm:coords failed', 1, RTDB_ERR)
 c      if(.not.rtdb_get(rtdb, 'dimqm:noseed', mt_log, 1, dimqm_noseed))
 c     $  call errquit('indDip: get noseed failed', 1, RTDB_ERR)
       call dimqm_get_noseed(rtdb, dimqm_noseed)

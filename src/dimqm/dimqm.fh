@@ -1,85 +1,10 @@
-c
-c     DIM/QM MA handles
-c
-c      integer k_dimxyz, l_dimxyz ! DIM coordinates
-      integer k_muind,  l_muind  ! Induced dipoles
-      integer k_muold,  l_muold  ! Last cycle's induced dipoles
-c      integer k_eqmn,   l_eqmn   ! E-field due to QM nuclei
-c      integer k_scrn,   l_scrn
-      common /dimqmMA/ k_muold, l_muold, k_muind, l_muind
-c
-c     DIM/QM Common Logicals
-c
-c      Logical ldimqm          ! Whether or not DIM/QM is true
-c      Logical lcpim           ! Do a CPIM calculation or not
-c      Logical lpim            ! Do a PIM calculation or not
-c      Logical lfirst          ! If this is the first DIM/QM iteration or not
-c      Logical lscf            ! In an scf cycle (as opposed to response)
-c      Logical lclFld          ! Include local fields or not
-c      Logical lefield         ! Include homogeneous electric field
-c      Logical lnopol          ! Don't include polarization operator
-c      Logical lnochar         ! Don't include charge operator
-c      Logical lnocross        ! Don't allow charge-dipole interactions
-c      Logical ldda            ! Use DDA-like screening withing the DIM system
-c      Logical lrsp            ! Inlcude DIM/QM in response equations
-c      Logical lfreq           ! Include external frequency in DIM/QM response 
-c      Logical lcmplx          ! Use complex equations or not
-c      Logical lfullgrid       ! Used for frozen density calculations
-c      Logical ldebug          ! More output
-c      Logical latmdip         ! Print atomic dipoles
-c      Logical lnograd         ! Don't include DIM/QM gradients
-c      Logical lgradPol        ! Include DIM/QM Polariztion gradients
-c      Logical lgradFF         ! Include DIM/QM Force Field gradients
-c      Logical dimqm_go        ! Start DIM/QM cycles
-c      Logical dimqm_on        ! Flag to stop DIM cycles if dipoles are converged
-c      Logical ldim_cpks
-c      Logical dimqm_seeded    ! Flag if this is a seed or non-seed system
-c      Logical xyz_seeded(6)   ! Same as above, but for keeping track of (+/-) xyz perturbations separately
-c      Logical dimqm_noseed    ! Flag to ignore seeding
-c      common /dimqmLog/ ldimqm, lfirst, lscf, lclFld,
-c     $                  lefield, 
-c     $                  lrsp, lfreq, lcmplx, ldebug,
-c     $                  latmdip, dimqm_go, dimqm_on, 
-c     $                  dimqm_seeded, xyz_seeded
-c
-c     DIM/QM Common Integers
-c    
-c      Integer scrnType     ! Screening type used (ERF|EXP|ESP|GAU|NONE)
-c      Integer alg          ! Solving algorithm
-c      Integer nIter        ! Number of iterations for solver
-c      Integer gridspacing  ! CMM grid size
-c      Integer maxcolleagues! CMM max # colleagues
-c      Integer intlistsize  ! CMM size of interaction list
-c      Integer nAtomsPerCell! CMM target atoms per cell
-c      Integer nOrder       ! Order of the interaction matrix
-      Integer nDIMAtoms     ! Number of DIM atoms
-c      Integer nDIMTypes    ! Number of types
-c      Integer nLow         ! Low atom on this processor
-c      Integer nUp          ! High atom on this processor
-c      Integer nAtomsProc   ! # Atoms on this processer
-c      Integer nOrderProc   ! # Unknowns on this processer
-c      Integer cleanGrads   ! Method to remove rigid motion from gradients
-c      Integer dimqm_rtdb   ! rtdb handle for fock_2e to read in dipoles
-c      Integer dimqm_geom   ! geometry handle for use in dim_grid_quadv0b
-c      integer g_fdens
-c      integer g_dipel_i    ! Imagniary component of dipole matrix due to complex local fields
-c      integer g_DIM_diag       ! Handle for DIM diagonal GA
-      common /dimqmInt/  nDIMAtoms
-c
-c      DIM/QM Common Reals
-c
-c      double precision Edimqm       ! DIM/QM total energy
-c      double precision volume       ! DIM total volume
-c      double precision multeq(3)    ! Equation for radius multiplier
-c      double precision dimtol       ! Tolerance for the iterative solver
-c      double precision dimtol0      ! Original tolerance.  Used for switching
-c      double precision dimtolxyz(6)
-c      double precision scrnFactor   ! Screening factor, erf(scrnFactor*dist)
-c      double precision totcharge    ! Total charge of the DIM system
-c      double precision cleanGradCUT ! Cutoff radius for number of DIM point
-c      double precision finiteFieldX  ! Field applied for finite-difference with local fields
-c      double precision finiteFieldY
-c      double precision finiteFieldZ
-c      common /dimqmDP/ finiteFieldX,
-c     $                 finiteFieldY, finiteFieldZ
+      Logical DIM_ldebug       ! debug flag for DIM/QM
+      common /dimqmLog/ DIM_ldebug
 
+      integer DIM_nOrder    ! Order of the interaction matrix
+      integer DIM_nAtoms    ! Number of DIM atoms
+      integer g_DIMxyz
+      integer g_DIMmuind
+      integer g_DIMmuold
+      common /dimqmInt/ DIM_nOrder, DIM_nAtoms, g_DIMxyz, 
+     $                  g_DIMmuind, g_DIMmuold

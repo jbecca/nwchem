@@ -105,9 +105,9 @@ c
       if(.not.ma_push_get(mt_dbl,i3,'dimrsp:xyz',l_dimxyz,k_dimxyz))
      $  call errquit('malloc dimrsp:xyz failed',1,MA_ERR)
 c
-      if(.not.rtdb_get(rtdb,'dimpar:coords',mt_dbl,i3,
+      if(.not.rtdb_get(rtdb,'dimqm:coords',mt_dbl,i3,
      $                                dbl_mb(k_dimxyz)))
-     $  call errquit('get dimpar:coords failed', 1, RTDB_ERR)
+     $  call errquit('get dimqm:coords failed', 1, RTDB_ERR)
 
 c     Loop over xyz dsrections
       if (.not. rtdb_get(rtdb, 'dimqm:noseed', mt_log,1,dimqm_noseed))
@@ -430,9 +430,9 @@ cc
 c      if(.not.ma_push_get(mt_dbl,i3,'dimrsp:xyz',l_dimxyz,k_dimxyz))
 c     $  call errquit('malloc dimrsp:xyz failed',1,MA_ERR)
 cc
-c      if(.not.rtdb_get(rtdb,'dimpar:coords',mt_dbl,i3,
+c      if(.not.rtdb_get(rtdb,'dimqm:coords',mt_dbl,i3,
 c     $                                dbl_mb(k_dimxyz)))
-c     $  call errquit('get dimpar:coords failed', 1, RTDB_ERR)
+c     $  call errquit('get dimqm:coords failed', 1, RTDB_ERR)
 c
 c      seed_save = dimqm_noseed
 c      dimqm_noseed = .true.

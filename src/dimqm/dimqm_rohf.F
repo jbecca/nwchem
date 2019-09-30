@@ -48,7 +48,7 @@ c     since these arrays won't be needed in response.
       call dimqm_getnDIM(rtdb,nDIM)
 c while g_muold isn't used, for this single cycle run, if it is not
 c created, segfaults happen. TODO: find better way for this to work
-      call dimqm_main2(rtdb, basis, geom, g_dens, .true.,nDIM)
+      call dimqm_main2(rtdb, basis, geom, g_dens, .true.)
       if (.not.ga_create(MT_DBL, nbf, nbf, 'DIM FOCK', -1, -1, g_dim))
      $  call errquit('dimqm_rohf_wrap: create dim fock failed', 1,
      $               GA_ERR)

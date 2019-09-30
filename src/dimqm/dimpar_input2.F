@@ -146,7 +146,7 @@ c
 c       RAD
         else if(inp_compare(.false.,'rad',field)) then
           if(.not. inp_f(typerad(nDIMTypes)))
-     $      call errquit('dimpar:rad',911,INPUT_ERR)
+     $      call errquit('dimqm:rad',911,INPUT_ERR)
 c
 c       DRUDE
         else if(inp_compare(.false.,'drude',field)) then
@@ -156,12 +156,12 @@ c       DRUDE
             stat = stat .and. inp_a(units)
 c       ADD UNIT CONVERSION HERE
           end if
-          if(.not. stat) call errquit('dimpar:drude',911,INPUT_ERR)
+          if(.not. stat) call errquit('dimqm:drude',911,INPUT_ERR)
 c
 c       BOUND
         else if(inp_compare(.false.,'bound',field)) then
           if(.not. inp_f(typebound(nDIMTypes)))
-     $      call errquit('dimpar:bound', 911, INPUT_ERR)
+     $      call errquit('dimqm:bound', 911, INPUT_ERR)
 c       EXP DIELECTRIC
         else if(inp_compare(.false.,'exp',field)) then
           if(.not.inp_a(field))
@@ -313,8 +313,6 @@ c     Check number of atoms specified versus number read
      $   call errquit("atoms read doesn't match atoms specified",
      $                 1, INPUT_ERR)
 c
-      nDIMAtoms = nDIM
-      call ga_brdcast(msg_dimqm, nDIMAtoms, 1, 0)
       nOrder = 3 * nDIM
 c
 c   Convert Units
@@ -329,48 +327,48 @@ c
 c   Store in RTDB
       stat = .true.
 c      write(luout,*) "Storing"
-      stat=stat.and.rtdb_put(rtdb,'dimpar:ndim',mt_int,1,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:ndim',mt_int,1,
      $                       ndim)
-      stat=stat.and.rtdb_put(rtdb,'dimpar:ndimtypes',mt_int,1,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:ndimtypes',mt_int,1,
      $                       ndimtypes)
-C      stat=stat.and.rtdb_put(rtdb,'dimpar:norder',mt_int,1,
+C      stat=stat.and.rtdb_put(rtdb,'dimqm:norder',mt_int,1,
 C     $                       norder)
 ! Is there a reason the following is rtdb put twice???
 ! removed it for now, lets see if it works
-      stat=stat.and.rtdb_put(rtdb,'dimpar:name',mt_byte,nDIMTypes*2,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:name',mt_byte,nDIMTypes*2,
      $                       typename(1:nDIMTypes))
-      stat=stat.and.rtdb_put(rtdb,'dimpar:sPol',mt_dbl,nDIMTypes,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:spol',mt_dbl,nDIMTypes,
      $                       typepol(1:nDIMTypes))
-      stat=stat.and.rtdb_put(rtdb,'dimpar:cap',mt_dbl,nDIMTypes,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:cap',mt_dbl,nDIMTypes,
      $                       typecap(1:nDIMTypes))
-      stat=stat.and.rtdb_put(rtdb,'dimpar:char',mt_dbl,nDIMTypes,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:char',mt_dbl,nDIMTypes,
      $                       typechar(1:nDIMTypes))
-      stat=stat.and.rtdb_put(rtdb,'dimpar:om1',mt_dbl,nDIMTypes,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:om1',mt_dbl,nDIMTypes,
      $                       typeom1(1:nDIMTypes))
-      stat=stat.and.rtdb_put(rtdb,'dimpar:om2',mt_dbl,nDIMTypes,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:om2',mt_dbl,nDIMTypes,
      $                       typeom2(1:nDIMTypes))
-      stat=stat.and.rtdb_put(rtdb,'dimpar:gm1',mt_dbl,nDIMTypes,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:gm1',mt_dbl,nDIMTypes,
      $                       typegm1(1:nDIMTypes))
-      stat=stat.and.rtdb_put(rtdb,'dimpar:gm2',mt_dbl,nDIMTypes,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:gm2',mt_dbl,nDIMTypes,
      $                       typegm2(1:nDIMTypes))
-      stat=stat.and.rtdb_put(rtdb,'dimpar:size',mt_dbl,nDIMTypes,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:size',mt_dbl,nDIMTypes,
      $                       typesize(1:nDIMTypes))
-      stat=stat.and.rtdb_put(rtdb,'dimpar:rad',mt_dbl,nDIMTypes,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:rad',mt_dbl,nDIMTypes,
      $                       typerad(1:nDIMTypes))
-      stat=stat.and.rtdb_put(rtdb,'dimpar:drude',mt_dbl,nDIMTypes*2,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:drude',mt_dbl,nDIMTypes*2,
      $                       typeDrude(1:2, 1:nDIMTypes))
-      stat=stat.and.rtdb_put(rtdb,'dimpar:bound',mt_dbl,nDIMTypes,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:bound',mt_dbl,nDIMTypes,
      $                       typebound(1:nDIMTypes))
-      stat=stat.and.rtdb_put(rtdb,'dimpar:fermi',mt_dbl,nDIMTypes,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:fermi',mt_dbl,nDIMTypes,
      $                       typefermi(1:nDIMTypes))
-      stat=stat.and.rtdb_put(rtdb,'dimpar:lrtz',mt_dbl,
+      stat=stat.and.rtdb_put(rtdb,'dimqm:lrtz',mt_dbl,
      $                       nDIMTypes*3*nLrtz,
      $                       typelrtz(1:3, 1:nLrtz, 1:nDIMTypes))
-      stat = stat .and. rtdb_put(rtdb,'dimpar:coords',mt_dbl, nAtoms*3,
+      stat = stat .and. rtdb_put(rtdb,'dimqm:coords',mt_dbl, nAtoms*3,
      $                           dbl_mb(k_coords))
-      stat = stat.and.rtdb_put(rtdb, 'dimpar:typeindex',mt_int, nAtoms,
+      stat = stat.and.rtdb_put(rtdb, 'dimqm:typeindex',mt_int, nAtoms,
      $                         int_mb(k_typeindex))
-      stat = stat.and.rtdb_put(rtdb, 'dimpar:hasexp',mt_log, nDIMTypes,
+      stat = stat.and.rtdb_put(rtdb, 'dimqm:hasexp',mt_log, nDIMTypes,
      $                         hasExpDie(1:nDIMTypes))
       if(.not.stat) call errquit('error in dimpar_input', 1, RTDB_ERR)
 c

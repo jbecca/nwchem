@@ -56,9 +56,9 @@ c   Allocate memory for induced dipoles
      $  call errquit('printAtomicDipoles malloc muind failed',1,MA_ERR)
 c   Allocate memory for atom names
 c   Read in atom names
-      if(.not.rtdb_get(rtdb,'dimpar:typeindex',mt_int,nDIM,tx))
+      if(.not.rtdb_get(rtdb,'dimqm:typeindex',mt_int,nDIM,tx))
      $  call errquit('printAtomicDipoles get tx failed',1,RTDB_ERR)
-      if(.not.rtdb_get(rtdb, 'dimpar:name', mt_byte, nDIMTypes*2,
+      if(.not.rtdb_get(rtdb, 'dimqm:name', mt_byte, nDIMTypes*2,
      $                 elements))
      $  call errquit('printAtomicDipoles get names failed',1,RTDB_ERR)
 

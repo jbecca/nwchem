@@ -458,12 +458,9 @@ c     Jorge Garza/End
       if (use_dimqm) then
          if (.not.rtdb_get(rtdb, 'dimqm:ldimqm', mt_log, 1, ldimqm))
      $      ldimqm = .false.
-         write(luout,*)'ldimqm', ldimqm
          if (ldimqm) then
            call dimqm_getgo(rtdb, dimqm_go)
            call dimqm_getnDIM(rtdb, nDIM)
-           write(luout,*)'ldimqm',ldimqm
-           write(luout,*)'dimqm_go',dimqm_go
          endif
       else
          ldimqm=.false.
@@ -1151,7 +1148,7 @@ c
         call dimqm_getlfirst(rtdb, lfirst)
         if (lfirst) call dimqm_init(rtdb, 0)
 c        call dimqm_main(rtdb, ao_bas_han, geom, g_dens, .false.,nDIM)
-        call dimqm_main2(rtdb, ao_bas_han, geom, g_dens, .false.,nDIM)
+        call dimqm_main2(rtdb, ao_bas_han, geom, g_dens, .false.)
       end if
 c
 c     Determine HOMO energy (for Zhan-Nichols-Dixon AC)
@@ -1830,7 +1827,6 @@ c     Add DIM energy
 c  jbecca START: this was missed in code cleaning
          edimqm = 0.0d0
          call dimqm_getenergy(rtdb, edimqm)
-         write(luout,*)'edimqm1',edimqm
 c  jbecca END
          Etnew = Etnew + Edimqm
       endif
@@ -2030,7 +2026,6 @@ c        NOTE: Why are we redoing this energy sum?
          if(ldimqm .and. dimqm_go) then
 c  jbecca START: it appears this was missed in the house-cleaning
 c            call dimqm_energy(edimqm)
-            write(luout,*)'edimqm2',edimqm
 c            call dimqm_getenergy(rtdb, Edimqm)
 c  jbecca END
             Etnew = Etnew + Edimqm
@@ -2121,9 +2116,7 @@ c     Final DIM dipoles
 c
       if (ldimqm) then
 c        call dimqm_main(rtdb, ao_bas_han, geom, g_dens, .true., nDIM)
-        call dimqm_main2(rtdb, ao_bas_han, geom, g_dens, .true., nDIM)
-
-        call dimqm_tidy(rtdb)
+        call dimqm_main2(rtdb, ao_bas_han, geom, g_dens, .true.)
       end if
 
 c

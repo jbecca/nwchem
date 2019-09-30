@@ -73,9 +73,9 @@ c
 c     Initizalize arrays
       call dfill(i3*icmplx, ZERO, dbl_mb(k_muind), 1)
       call dfill(i3*icmplx, ZERO, dbl_mb(k_muold), 1)
-      if(.not.rtdb_get(rtdb,'dimpar:coords',mt_dbl,i3,
+      if(.not.rtdb_get(rtdb,'dimqm:coords',mt_dbl,i3,
      $                                dbl_mb(k_dimxyz)))
-     $  call errquit('get dimpar:coords failed', 1, RTDB_ERR)
+     $  call errquit('get dimqm:coords failed', 1, RTDB_ERR)
 c
 c       call dimqm_screening(rtdb, geom, basis, dbl_mb(k_dimxyz),
 c     $                      screen)      

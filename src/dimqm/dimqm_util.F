@@ -82,13 +82,13 @@ c      if (.not. rtdb_get(rtdb, 'dimqm:lrsp', mt_log, 1, lrsp))
 c     A     lrsp=.false.
 c      if (.not. rtdb_get(rtdb, 'dimqm:lfirst', mt_log, 1, lfirst))
 c     A     lfirst=.false.
-c      if (.not. rtdb_get(rtdb, 'dimpar:ndim', mt_int, 1, ndim))
+c      if (.not. rtdb_get(rtdb, 'dimqm:ndim', mt_int, 1, ndim))
 c     A     ndim=0
-c      if (.not. rtdb_get(rtdb,'dimpar:ndimtypes', mt_int, 1, ndimtypes))
+c      if (.not. rtdb_get(rtdb,'dimqm:ndimtypes', mt_int, 1, ndimtypes))
 c     A     ndimtypes=0
 c      if (.not. rtdb_get(rtdb, 'dimpar:ndim', mt_int, 1, ndim))
 c     A     ndim=0
-c      if (.not. rtdb_get(rtdb,'dimpar:norder', mt_int, 1, norder))
+c      if (.not. rtdb_get(rtdb,'dimqm:norder', mt_int, 1, norder))
 c     A     norder=0
 c      if (.not. rtdb_get(rtdb,'dimqm:alg', mt_int, 1, alg))
 c     A     alg=0
@@ -173,7 +173,7 @@ c  and also one master routine that can pull and put all relevant values
       integer rtdb
       integer nDIM
       
-      if (.not.(rtdb_get(rtdb, 'dimpar:ndim',mt_int,1,nDIM)))
+      if (.not.(rtdb_get(rtdb, 'dimqm:ndim',mt_int,1,nDIM)))
      $      call errquit('dimqm_getndim failed',1,RTDB_ERR)
       return
       end subroutine dimqm_getndim

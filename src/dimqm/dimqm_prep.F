@@ -68,21 +68,21 @@ c      if(id.eq.0 .and. ldebug) write(luout,*) "Start dimqm_prep"
 c      call pphilo(id, nDIM, mLo, mUp, mOnNode)
 cc
 cc   Pull needed info from RTDB
-c      if(.not. rtdb_get(rtdb,'dimpar:sPol', mt_dbl, nDIMTypes, sPol))
-c     $  call errquit('dimpar:sPol rtdb get failed', 0, RTDB_ERR)
+c      if(.not. rtdb_get(rtdb,'dimqm:spol', mt_dbl, nDIMTypes, sPol))
+c     $  call errquit('dimqm:spol rtdb get failed', 0, RTDB_ERR)
 cc
-c      if(.not. rtdb_get(rtdb,'dimpar:typeindex', mt_int, nDIM, tx))
+c      if(.not. rtdb_get(rtdb,'dimqm:typeindex', mt_int, nDIM, tx))
 c     $  call errquit('dimpar:type index rtdb get failed', 0, RTDB_ERR)
 cc
-c      if(.not. rtdb_get(rtdb,'dimpar:bound', mt_dbl, nDIMTypes, bound))
-c     $  call errquit('dimpar:bound rtdb get failed', 0, RTDB_ERR)
+c      if(.not. rtdb_get(rtdb,'dimqm:bound', mt_dbl, nDIMTypes, bound))
+c     $  call errquit('dimqm:bound rtdb get failed', 0, RTDB_ERR)
 cc
-c      if(.not. rtdb_get(rtdb,'dimpar:drude', mt_dbl, nDIMTypes*2,
+c      if(.not. rtdb_get(rtdb,'dimqm:drude', mt_dbl, nDIMTypes*2,
 c     $                                    drudeterms))
-c     $  call errquit('dimpar:drude rtdb get failed', 0, RTDB_ERR)
-c      if(.not. rtdb_get(rtdb,'dimpar:hasexp', mt_log, nDIMTypes,
+c     $  call errquit('dimqm:drude rtdb get failed', 0, RTDB_ERR)
+c      if(.not. rtdb_get(rtdb,'dimqm:hasexp', mt_log, nDIMTypes,
 c     $                                    hasExpDie))
-c     $  call errquit('dimpar:hasexp rtdb get failed', 0, RTDB_ERR)
+c     $  call errquit('dimqm:hasexp rtdb get failed', 0, RTDB_ERR)
 c
 cc      if (ldebug) write(luout,*) 'values grabbed from rtdb'
 cc      if (ldebug) write(luout,*) 'spol',sPol
@@ -349,22 +349,21 @@ c
       expdies = ZERO_C
       expdiesRead = .false.
       id = ga_nodeid()
-      if(id.eq.0 .and. ldebug) write(luout,*) "Start dimqm_prep_real"
 c      call pphilo(id, nDIM, mLo, mUp, mOnNode)
 c
 c   Pull needed info from RTDB
-      if(.not. rtdb_get(rtdb,'dimpar:sPol', mt_dbl, nDIMTypes, sPol))
-     $  call errquit('dimpar:sPol rtdb get failed', 0, RTDB_ERR)
-      if(.not. rtdb_get(rtdb,'dimpar:typeindex', mt_int, nDIM, tx))
+      if(.not. rtdb_get(rtdb,'dimqm:spol', mt_dbl, nDIMTypes, sPol))
+     $  call errquit('dimqm:spol rtdb get failed', 0, RTDB_ERR)
+      if(.not. rtdb_get(rtdb,'dimqm:typeindex', mt_int, nDIM, tx))
      $  call errquit('dimpar:type index rtdb get failed', 0, RTDB_ERR)
-      if(.not. rtdb_get(rtdb,'dimpar:bound', mt_dbl, nDIMTypes, bound))
-     $  call errquit('dimpar:bound rtdb get failed', 0, RTDB_ERR)
-      if(.not. rtdb_get(rtdb,'dimpar:drude', mt_dbl, nDIMTypes*2,
+      if(.not. rtdb_get(rtdb,'dimqm:bound', mt_dbl, nDIMTypes, bound))
+     $  call errquit('dimqm:bound rtdb get failed', 0, RTDB_ERR)
+      if(.not. rtdb_get(rtdb,'dimqm:drude', mt_dbl, nDIMTypes*2,
      $                                    drudeterms))
-     $  call errquit('dimpar:drude rtdb get failed', 0, RTDB_ERR)
-      if(.not. rtdb_get(rtdb,'dimpar:hasexp', mt_log, nDIMTypes,
+     $  call errquit('dimqm:drude rtdb get failed', 0, RTDB_ERR)
+      if(.not. rtdb_get(rtdb,'dimqm:hasexp', mt_log, nDIMTypes,
      $                                    hasExpDie))
-     $  call errquit('dimpar:hasexp rtdb get failed', 0, RTDB_ERR)
+     $  call errquit('dimqm:hasexp rtdb get failed', 0, RTDB_ERR)
 
 c      if (ldebug) write(luout,*) 'values grabbed from rtdb'
 c      if (ldebug) write(luout,*) 'spol',sPol
@@ -383,11 +382,9 @@ c        DP diagonal allocation
      $                       nOrder, -1, g_DIM_diag_real))
      $    call errquit('dimqm:alphainvFD: create failed',9,GA_ERR)
 
-      if (ldebug.and.id.eq.0) write(luout,*) 'diagS arrays allocated'
 c
 c        Zero the diagonal
       call ga_zero(g_DIM_diag_real)
-      if (ldebug.and.id.eq.0) write(luout,*) 'diags arrays zerod'
 c
 c   =========================================================================
 c   Build the interaction matrix (only the diagonal for the iterative solver) 
@@ -396,7 +393,6 @@ c
 c      Iterative solver
 c      if(alg > 0) then
         call ga_init_fence()
-        if (ldebug.and.id.eq.0) write(luout,*) 'ga_init_fence called'
 c
 c          Loop over DIM atoms
           do m = 1, nDIM
@@ -419,7 +415,6 @@ c      dimqm_on = .true.
 
       call dimqm_setlfirst(rtdb, lfirst)
 
-      if (ldebug.and.id.eq.0) write(luout,*)'exiting dimqm_prep_real'
       end subroutine dimqm_prep_real
 
 
@@ -493,18 +488,18 @@ c
 c      call pphilo(id, nDIM, mLo, mUp, mOnNode)
 c
 c   Pull needed info from RTDB
-      if(.not. rtdb_get(rtdb,'dimpar:sPol', mt_dbl, nDIMTypes, sPol))
-     $  call errquit('dimpar:sPol rtdb get failed', 0, RTDB_ERR)
-      if(.not. rtdb_get(rtdb,'dimpar:typeindex', mt_int, nDIM, tx))
+      if(.not. rtdb_get(rtdb,'dimqm:spol', mt_dbl, nDIMTypes, sPol))
+     $  call errquit('dimqm:spol rtdb get failed', 0, RTDB_ERR)
+      if(.not. rtdb_get(rtdb,'dimqm:typeindex', mt_int, nDIM, tx))
      $  call errquit('dimpar:type index rtdb get failed', 0, RTDB_ERR)
-      if(.not. rtdb_get(rtdb,'dimpar:bound', mt_dbl, nDIMTypes, bound))
-     $  call errquit('dimpar:bound rtdb get failed', 0, RTDB_ERR)
-      if(.not. rtdb_get(rtdb,'dimpar:drude', mt_dbl, nDIMTypes*2,
+      if(.not. rtdb_get(rtdb,'dimqm:bound', mt_dbl, nDIMTypes, bound))
+     $  call errquit('dimqm:bound rtdb get failed', 0, RTDB_ERR)
+      if(.not. rtdb_get(rtdb,'dimqm:drude', mt_dbl, nDIMTypes*2,
      $                                    drudeterms))
-     $  call errquit('dimpar:drude rtdb get failed', 0, RTDB_ERR)
-      if(.not. rtdb_get(rtdb,'dimpar:hasexp', mt_log, nDIMTypes,
+     $  call errquit('dimqm:drude rtdb get failed', 0, RTDB_ERR)
+      if(.not. rtdb_get(rtdb,'dimqm:hasexp', mt_log, nDIMTypes,
      $                                    hasExpDie))
-     $  call errquit('dimpar:hasexp rtdb get failed', 0, RTDB_ERR)
+     $  call errquit('dimqm:hasexp rtdb get failed', 0, RTDB_ERR)
       if(.not. rtdb_get(rtdb, 'dimqm:omega', mt_dbl, 1, om))
      $  call errquit('dimqm:omega rtdb get failed', 0, RTDB_ERR)
 c   =========================================

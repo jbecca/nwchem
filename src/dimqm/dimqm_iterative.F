@@ -55,7 +55,7 @@ c     Local variables
 c     Get node ID
       id = ga_nodeid()
       call dimqm_get_debug(rtdb, ldebug)
-      if(.not. rtdb_get(rtdb, 'dimpar:ndimtypes', mt_int, 1, nDIMTypes))
+      if(.not. rtdb_get(rtdb, 'dimqm:ndimtypes', mt_int, 1, nDIMTypes))
      $   call errquit('dimqm_iter: get nDIMTypes failed',1,RTDB_ERR)
       if(id.eq.0.and.ldebug) write(LuOut,*)
      $   "Begin dimqm_iterative"

@@ -29,7 +29,7 @@ c---------------------------- Local Variables --------------------------
       id = ga_nodeid()
       ldebug = .true.
 c      if (ldebug.and.id.eq.0) write(luout,*)'starting dimqm_iterative2'
-      if(.not.rtdb_get(rtdb, 'dimpar:ndimtypes', mt_int,1,nDIMTypes))
+      if(.not.rtdb_get(rtdb, 'dimqm:ndimtypes', mt_int,1,nDIMTypes))
      $   call errquit('dim_iter2: get nDIMTypes failed',1,RTDB_ERR)
 c      if (ldebug.and.id.eq.0) write(luout,*)'got ndimtypes'
 c  Allocate the work GAs

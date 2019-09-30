@@ -26,8 +26,8 @@ c
 c     MA handles
       integer k_fld, l_fld
       integer l_dimxyz, k_dimxyz ! DIM coordinates handles
-c      integer l_muind,  k_muind  ! DIM dipoles handles
-c      integer l_muold,  k_muold
+      integer l_muind,  k_muind  ! DIM dipoles handles
+      integer l_muold,  k_muold
 c
 c     Local variables
       integer idir, m, i3
@@ -69,8 +69,8 @@ c
 c     Coords
       if(.not.ma_push_get(mt_dbl,i3,'dim coords',l_dimxyz,k_dimxyz))
      $   call errquit('dimqm_pol malloc k_xyz failed',1,MA_ERR)
-      if(.not.rtdb_get(rtdb,'dimpar:coords',mt_dbl,i3,dbl_mb(k_dimxyz)))
-     $   call errquit('dimpar:coords rtdb get failed',1,RTDB_ERR)
+      if(.not.rtdb_get(rtdb,'dimqm:coords',mt_dbl,i3,dbl_mb(k_dimxyz)))
+     $   call errquit('dimqm:coords rtdb get failed',1,RTDB_ERR)
 c
 c     Induced Dipoles
 c      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dim muind',
