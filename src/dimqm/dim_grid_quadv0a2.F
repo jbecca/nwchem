@@ -1,4 +1,4 @@
-      Subroutine dim_grid_quadv0a(ncoef_max, natoms, iniz, ifin,
+      Subroutine dim_grid_quadv0a2(ncoef_max, natoms, iniz, ifin,
      $                            rho, qwght, qxyz, xyz, expo, ccoef,
      $                            Bmat, Fmat, Pmat, rq, cetobfr,
      $                            ibf_ao, rqbuf, rchi_atom, g_vdim,
@@ -61,13 +61,15 @@ c   Input Variables
       integer ipm
       integer imag
       double precision dimxyz(3, DIM_nAtoms)
-      double precision muind(3, DIM_nAtoms, nmat)
+      double precision muind(3, DIM_nAtoms)
       integer rtdb, id
+      logical ldebug
 c
+      ldebug = .true.
       id = ga_nodeid()
-      if(DIM_ldebug.and.id.eq.0) then
-        write(luout,*) "dim_grid_quadv0a start"
-      end if
+c      if(ldebug.and.id.eq.0) then
+c        write(luout,*) "dim_grid_quadv0a start"
+c      end if
       
       if(n_rec_in_file.eq.0) goto 100
 c
@@ -118,7 +120,7 @@ c        temp put buf into currently used arrays qxyz and qwght
 c     
          call grid_repack(rqbuf, qxyz, qwght, nqpts, rad,istep)
          if(nqpts.ne.0) then
-            call dim_grid_quadv0b(
+            call dim_grid_quadv0b2(
      $              ictr_buf, qxyz, qwght, nqpts, rad,
      $              ncoef_max, natoms, iniz, ifin, rho,
      $              xyz, expo, Bmat, Fmat, Pmat, rq,
@@ -140,9 +142,9 @@ c
      &     call errquit('grid_quadv0a: pop stack failed.',1, MA_ERR)
  100  continue
 c
-      if(DIM_ldebug) then
-        write(luout,*) "dim_grid_quadv0a end"
-      end if
+c      if(ldebug) then
+c        write(luout,*) "dim_grid_quadv0a end"
+c      end if
       call ga_sync
       return
       end

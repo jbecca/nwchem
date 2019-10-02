@@ -1,7 +1,7 @@
 c
 c
       Subroutine dim_eval_fnl(ptnl,nq,qwght,xyz,qxyz,npert,
-     $                        ipm, imag, muind, nDIM, rtdb)
+     $                        ipm, imag, muind, rtdb)
 c
       implicit none
 c
@@ -12,18 +12,18 @@ c
 #include "errquit.fh"
 #include "global.fh"
 #include "tcgmsg.fh"
+#include "dimqm.fh"
 c
 c   Input Variables
       double precision ptnl(nq, npert) ! DIM potential at each quadrature point for each perturbation
       integer nq                       ! Number of quadrature points
       double precision qwght(nq)       ! Quadrature weights
-      double precision xyz(3, nDIM)    ! DIM atom coordinates
+      double precision xyz(3, DIM_nAtoms)    ! DIM atom coordinates
       double precision qxyz(3, nq)     ! Quadrature point coodinates
       integer npert
       integer ipm                      
       integer imag
-      double precision muind(3, nDIM, npert)  ! Array that holds induced dipoles.  Structured as (component, atom, perturbation)
-      integer nDIM
+      double precision muind(3, DIM_nAtoms, npert)  ! Array that holds induced dipoles.  Structured as (component, atom, perturbation)
       integer rtdb
 c
 c   Local Variables
@@ -40,6 +40,10 @@ c      data dpm /'+', '-'/
 c      data dri /'r', 'i'/
 c
       id = ga_nodeid()
+      if (DIM_ldebug.and.(id.eq.0)) then
+            write(luout,*)'starting dim_eval_fnl'
+            write(luout,*)'npert :', npert
+      endif
 c
       if (.not. rtdb_get(rtdb, 'dimqm:scrnType', mt_int, 1, scrnType))
      $   call errquit('dim_eval_fnl: scrnType get failed',1,RTDB_ERR)
@@ -74,7 +78,7 @@ c        write(luout,*) "muind", id, muind
      $   call errquit('dim_eval_fnl:get scrnFactor failed',1,RTDB_ERR)
         endif
         do n = 1, nq ! Loop over quadrature points
-          do i = 1, nDIM ! Loop over DIM atoms
+          do i = 1, DIM_nAtoms! Loop over DIM atoms
 c           Distance between two points
             r(:) = xyz(:,i) - qxyz(:,n) 
             dist = SQRT((r(1)**2 + r(2)**2 + r(3)**2))
@@ -105,5 +109,7 @@ c       Combine with quadrature weights
           ptnl(jj,idir) = -ptnl(jj,idir)*qwght(jj)
         enddo
       end do ! End loop over perturbations
+      if (DIM_ldebug.and.(id.eq.0)) 
+     $ write(luout,*)'leaving dim_eval_fnl'
       return
       end subroutine dim_eval_fnl

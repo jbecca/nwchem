@@ -58,7 +58,13 @@
          dimqm_init.o\
          dimqm_tidy.o\
          dimqm_create.o\
-         dimqm_destroy.o
+         dimqm_destroy.o\
+         dim_grid_quadv02.o\
+         dim_grid_quadv0a2.o\
+         dim_grid_quadv0b2.o\
+         dim_grid_static.o\
+         dim_tabcd_stat.o\
+         dim_eval_fnl_stat.o
 
    LIBRARY = libdimqm.a
 #

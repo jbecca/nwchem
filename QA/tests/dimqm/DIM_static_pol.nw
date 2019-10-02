@@ -25,6 +25,7 @@ dft
 end
 
 dimqm
+ debug
  PIM
  Algorithm 1
  screen EXP 1.0d0

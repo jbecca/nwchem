@@ -1146,7 +1146,7 @@ c
       if(ldimqm .and. dimqm_go) then
         lfirst = .false. 
         call dimqm_getlfirst(rtdb, lfirst)
-        if (lfirst) call dimqm_init(rtdb, 0)
+        if (lfirst) call dimqm_init(rtdb)
 c        call dimqm_main(rtdb, ao_bas_han, geom, g_dens, .false.,nDIM)
         call dimqm_main2(rtdb, ao_bas_han, geom, g_dens, .false.)
       end if

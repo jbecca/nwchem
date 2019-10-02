@@ -48,6 +48,8 @@ c     since these arrays won't be needed in response.
       call dimqm_getnDIM(rtdb,nDIM)
 c while g_muold isn't used, for this single cycle run, if it is not
 c created, segfaults happen. TODO: find better way for this to work
+      call dimqm_init(rtdb)
+      call ga_sync()
       call dimqm_main2(rtdb, basis, geom, g_dens, .true.)
       if (.not.ga_create(MT_DBL, nbf, nbf, 'DIM FOCK', -1, -1, g_dim))
      $  call errquit('dimqm_rohf_wrap: create dim fock failed', 1,
@@ -78,6 +80,7 @@ c
 #include "mafdecls.fh"
 #include "rtdb.fh"
 #include "stdio.fh"
+#include "dimqm.fh"
 
 c     Input Variables
       integer rtdb  
@@ -93,29 +96,23 @@ c
 c     Local Variables
       integer rmax
       integer dims(3), chunk(3)
-      logical luhf_fd, ldebug
-      integer nDIM
-      logical ldimqm
+      logical luhf_fd
       logical lfirst
       logical lrsp, ldimqm_go
 
-      call dimqm_getnDIM(rtdb, nDIM)
-      call dimqm_used(rtdb, ldimqm)
-      call dimqm_getlrsp(rtdb, lrsp)
       call dimqm_getlfirst(rtdb, lfirst)
-      call dimqm_get_debug(rtdb, ldebug)
       if (.not.(rtdb_put(rtdb, 'dimqm:lcpks', mt_log, 1, .true.)))
      $      call errquit('dimqm lcpks put failed', 1, RTDB_ERR)
-      if (ldebug) write(luout,*)'starting dimqm_rohf_calcDIM'
+      if (DIM_ldebug) write(luout,*)'starting dimqm_rohf_calcDIM'
       ! Pull in residual and check seeding status
-      if (.not.lfirst) then
-        if (.not.rtdb_get(rtdb, 'lkain:rmax', mt_dbl, 1, rmax))
-     $    call errquit('dimqm_rohf: rmax get failed', 1, RTDB_ERR)
-c        call dimqm_check_dipoles(rtdb, 1.0d0, rmax)
-      end if
+    !  if (.not.lfirst) then
+    !    if (.not.rtdb_get(rtdb, 'lkain:rmax', mt_dbl, 1, rmax))
+    ! $    call errquit('dimqm_rohf: rmax get failed', 1, RTDB_ERR)
+c   !     call dimqm_check_dipoles(rtdb, 1.0d0, rmax)
+    !  end if
       ! Calculate DIM dipoles
       call dimqm_indDipoles2(rtdb, nbf, geom, basis, 
-     $                         g_dens, nDIM)
+     $                         g_dens, DIM_nAtoms)
       
       ! Build potential from dipoles
       dims(1)  = nfock
@@ -133,7 +130,7 @@ c        call dimqm_check_dipoles(rtdb, 1.0d0, rmax)
       call ga_symmetrize(g_dim)
       call ga_sync()
       
-      if (ldebug) write(luout,*)'ending dimqm_rohf_calcDIM'
+      if (DIM_ldebug) write(luout,*)'ending dimqm_rohf_calcDIM'
       end subroutine dimqm_rohf_calcDIM
 
 

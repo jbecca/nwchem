@@ -1,15 +1,15 @@
-      subroutine dim_grid_quadv0(rtdb, g_vdim)
+      subroutine dim_grid_quadv02(rtdb, g_vdim)
 c
       implicit none
       integer rtdb
       integer g_vdim
 
-      call dim_grid_quadv0_gen(rtdb, g_vdim, 1, 1, .false., 0, 1)
+      call dim_grid_quadv0_gen2(rtdb, g_vdim, 1, 1, .false., 0, 1)
 
       return
       end
 c
-      subroutine dim_grid_quadv0_gen(rtdb, g_vdim,
+      subroutine dim_grid_quadv0_gen2(rtdb, g_vdim,
      &      nmat, calc_type, l3d, ipm, imag)
 
       implicit none
@@ -93,15 +93,15 @@ c
       data direction /'x', 'y', 'z'/
       data dpm /'+', '-'/
       data dri /'r', 'i'/
-      logical ldebug, id
+      integer nDIM
+      logical ldebug
 
 c
 c      call dimqm_get_debug(rtdb, ldebug)
+      ldebug = .true.
       me = ga_nodeid()
-      id = (me.eq.0)
       nproc = ga_nnodes()
       oprint = ldebug 
-      if (DIM_ldebug .and. id) write(luout,*)'starting dim_grid_quadv0'
 c      if(oprint) then
 c        write(luout,*) "dim_grid_quadv0 start"
 c        write(*,*) "GEOM:", geom
@@ -131,11 +131,6 @@ cng
       if (.not. grid_written .or. n_per_rec .le. 0 ) then
          call grid_packing_info
       end if
-c
-c      if (oprint) then      
-c        write(*,*) " *** dim_grid_quadv0: calc_type:",calc_type 
-c        write(*,*) " *** dim_grid_quadv0: grid_written:",grid_written 
-c      end if
 c
 c     Set up logicals denoting calculation type
 c
@@ -288,25 +283,9 @@ c     Allocate and read in induced dipoles
      $                     l_muind, k_muind))
      $  call errquit('quadv0 malloc muind failed',2112, MA_ERR)
 
-      if(nmat > 1) then ! only 1 perturbation for ground state, 3 for response
-        do idir = 1, nmat
-          if(ipm .gt. 0) then ! FD Response (real and imaginary, +/-)
-            if(.not.rtdb_get(rtdb,'dimqm:muind_'//direction(idir)
-     $                       //'_'//dri(imag)//dpm(ipm), mt_dbl, 
-     $                   3*DIM_nAtoms, dbl_mb(k_muind+i3*(idir-1))))
-     $       call errquit('get perturbed +/- dipoles failed',6,RTDB_ERR)
-          else ! Static response
-            if(.not.rtdb_get(rtdb,'dimqm:muind_'//direction(idir),
-     $                       mt_dbl, 3*DIM_nAtoms,
-     $                       dbl_mb(k_muind+i3*(idir-1))))
-     $       call errquit('get pert xyz dip failed quadv0',6,RTDB_ERR)
-          end if
-        end do
-      else ! Ground state
-        if(.not.rtdb_get(rtdb, 'dimqm:muind', mt_dbl, 3*DIM_nAtoms,
-     $                   dbl_mb(k_muind)))
-     $    call errquit('get perturbed dipoles failed', 2112, RTDB_ERR)
-      endif
+      call ga_init_fence()
+      call ga_get(g_DIMmuind, 1, DIM_nOrder, 1, 1, dbl_mb(k_muind), 1)
+      call ga_fence()
 
       call ga_sync()
 c      
@@ -320,7 +299,7 @@ c
           endif
          end if
 c
-         call dim_grid_quadv0a(ncoef_max,nctrs, 
+         call dim_grid_quadv0a2(ncoef_max,nctrs, 
      &        int_mb(iniz), int_mb(ifin), 
      &        dbl_mb(irho),  
      &        dbl_mb(iqwght), dbl_mb(iqxyz), dbl_mb(ixyz), 

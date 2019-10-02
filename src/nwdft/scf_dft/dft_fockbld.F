@@ -406,7 +406,8 @@ c     one call to dim_grid_quadv0 is needed
         if(.not.ga_duplicate(g_vxc(1), g_vdim, 'dim:1'))
      $    call errquit("dft_fockbld: can't create dim:1", 99, GA_ERR)
         call ga_zero(g_vdim)
-        call dim_grid_quadv0(rtdb, g_vdim)
+        !call dim_grid_quadv0(rtdb, g_vdim)
+        call dim_grid_quadv02(rtdb, g_vdim)
 c        call ga_dadd(1.d0, g_vxc(1), 1.d0, g_fock, g_fock)
         Edim = ga_ddot(g_dens(1), g_vdim)
         if(ipol > 1) then

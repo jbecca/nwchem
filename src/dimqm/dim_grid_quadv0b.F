@@ -4,7 +4,7 @@
      $                            cetobfr, ibf_ao, bas_cent_info,
      $                            bas_cset_info, docset, rchi_atom,
      $                            g_vdim, nmat, do_scf, do_cpks_l, l3d,
-     $                            ipm, imag, dimxyz, muind, nDIM, rtdb)
+     $                            ipm, imag, dimxyz, muind, rtdb)
 c
 c$Id: dim_grid_quadv0b.F 19821 2010-12-14 07:46:49Z d3y133 $
 c
@@ -20,6 +20,7 @@ c
 #include "grid_sic.fh"
 #include "dftps.fh"
 #include "geom.fh"
+#include "dimqm.fh"
 c
 c   Input Variables
       integer ictr_buf ! ctr of grid
@@ -51,9 +52,8 @@ c   Input Variables
       logical l3d
       integer ipm
       integer imag
-      double precision dimxyz(3, nDIM) ! DIM Coordinates
-      double precision muind(3, nDIM, nmat) ! DIM Coordinates
-      integer nDIM
+      double precision dimxyz(3, DIM_nAtoms) ! DIM Coordinates
+      double precision muind(3, DIM_nAtoms, nmat) ! DIM Coordinates
       integer rtdb
 c      
 c   Local Variables 
@@ -77,6 +77,9 @@ c   Local Variables
       
       ldebug = .true.
       id = ga_nodeid()
+
+      if (DIM_ldebug .and. (id.eq.0)) 
+     $ write(luout, *)'starting dim_grid_quadv0b'
 c
       npol = (ipol*(ipol+1))/2
       acc_ao_gauss = dble(iaoacc)
@@ -144,11 +147,11 @@ c     &     dimxyz, qxyz,
 c     $     nmat, ipm, imag, muind,nDIM, rtdb)
       if (do_cpks_l) then
             call dim_eval_fnl(rho, nqpts, qwght, dimxyz,
-     &            qxyz, nmat, ipm, imag, muind, nDIM, rtdb)
+     &            qxyz, nmat, ipm, imag, muind, rtdb)
       else
             call dim_eval_fnl2(rho, nqpts, qwght,
      &            dimxyz, qxyz, 
-     $            muind,nDIM, rtdb)
+     $            muind, rtdb)
       endif
 c       rho(1:nqpts*nmat) = 0.0d0
 c

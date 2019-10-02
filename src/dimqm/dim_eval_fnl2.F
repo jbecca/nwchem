@@ -1,5 +1,5 @@
       subroutine dim_eval_fnl2(ptnl, nq, qwght, xyz, qxyz, 
-     $                           muind, nDIM, rtdb)
+     $                           muind)
       implicit none
 c-----------------------------------------------------------------------
 c  Purpose: Calculate final g.s. DIM potential at each quad. point
@@ -11,25 +11,24 @@ c-----------------------------------------------------------------------
 #include "mafdecls.fh"
 #include "errquit.fh"
 #include "global.fh"
+#include "dimqm.fh"
 
 c  Input Variables
       double precision ptnl(nq)
       double precision qwght(nq)
-      double precision xyz(3, nDIM)
+      double precision xyz(3, DIM_nAtoms)
       double precision qxyz(3, nq)
-      double precision muind(3, nDIM)
-      integer nq, nDIM, rtdb
+      double precision muind(3, DIM_nAtoms)
+      integer nq
 
 c  Local Variables
-      integer n, m, id
+      integer n, m
       double precision r(3), dist, dist3
-
-      id = ga_nodeid()
 
       call dfill(nq, 0.0d0, ptnl, 1)
 
       do n = 1, nq
-         do m = 1, nDIM
+         do m = 1, DIM_nAtoms
          r(:) = xyz(:,m) - qxyz(:,n) 
          dist = SQRT((r(1)**2 + r(2)**2 + r(3)**2))
          if (dist < 1.0d-12) dist = 1.0d-12
@@ -45,6 +44,5 @@ c  combine with grid weights
          ptnl(n) = -ptnl(n)*qwght(n)
       enddo             !n 
 
-c      if (id.eq.0) write(luout,*)'ptnl',ptnl
       return
       end subroutine dim_eval_fnl2

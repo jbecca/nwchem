@@ -43,8 +43,9 @@ c      dimqm_geom = geom
 c      i3 = 3*nDIM
 c
 c   Call quadrature routine for solving the DIM potential      
-       call dim_grid_quadv0_gen(rtdb, g_dim, nfock,
-     $                          2, .true., ipm, imag)
+c       call dim_grid_quadv0_gen(rtdb, g_dim, nfock,
+c     $                          2, .true., ipm, imag)
+       call dim_grid_static_gen(rtdb, g_dim)
 c
       return
       end subroutine fock_dim

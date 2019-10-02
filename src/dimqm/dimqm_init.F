@@ -1,4 +1,4 @@
-      subroutine dimqm_init(rtdb, calctype)
+      subroutine dimqm_init(rtdb)
 c       Make sure information in common blocks is same on all processors
 
         implicit none
@@ -10,7 +10,6 @@ c       Make sure information in common blocks is same on all processors
 #include "dimqm.fh"
 
       integer rtdb
-      integer calctype
       logical stat
 c      integer nDim
 
