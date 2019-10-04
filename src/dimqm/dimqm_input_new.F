@@ -1,4 +1,4 @@
-      subroutine dimqm_input2(rtdb)
+      subroutine dimqm_input_new(rtdb)
 *
       implicit none
 #include "errquit.fh"
@@ -62,7 +62,7 @@ c
 c     ----- Read values from input -----
 c
       id = ga_nodeid()
-      if(id.eq.0) write(luout,*)'starting dimqm_input2'
+      if(id.eq.0) write(luout,*)'starting dimqm_input_new'
  10   if(.not.inp_read())
      $     call errquit('dimqm_input: unexpected eof',911, INPUT_ERR)
       nfield = inp_n_field()
@@ -153,4 +153,4 @@ c -------------------------------------------------------------------
       if (.not. rtdb_put(rtdb, 'dimqm:latmdip', mt_log, 1, latmdip))
      $  call errquit('dimqm_input: latmdip put failed', 1, RTDB_ERR)
       return
-      end subroutine dimqm_input2
+      end subroutine dimqm_input_new

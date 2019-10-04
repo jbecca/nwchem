@@ -1,4 +1,4 @@
-      subroutine dimqm_indDipoles2(rtdb, nbf, geom, basis,
+      subroutine dimqm_indDipoles_stat(rtdb, nbf, geom, basis,
      $                              g_dens, nDIM)
 c     Determines the induced dipoles for the given density matrix 
 c     This version works for just static response
@@ -52,14 +52,14 @@ c-----------------------------------------------------------------
       id = ga_nodeid()
       call dimqm_get_debug(rtdb, ldebug)
       if(id.eq.0 .and. ldebug) write(luout,*)
-     $                  "Starting dimqm_indDipoles2"
+     $                  "Starting dimqm_indDipoles_stat"
       i3 = nDIM * 3
 c
       if(.not.ma_push_get(mt_dbl,3*nDIM,'dimqm:dimxyz',l_dimxyz,
-     $   k_dimxyz)) call errquit('dimqm_main2: malloc k_dimxyz failed',
+     $   k_dimxyz)) call errquit('dimqm_gs: malloc k_dimxyz failed',
      $   1,MA_ERR)
       if(.not.ma_alloc_get(mt_dbl,3*nDIM,'dimqm:eqme',l_eqme,
-     $   k_eqme)) call errquit('dimqm_main2: malloc k_eqme failed',
+     $   k_eqme)) call errquit('dimqm_gs: malloc k_eqme failed',
      $   1,MA_ERR)
       if(.not.rtdb_get(rtdb,'dimqm:coords',mt_dbl,
      $      3*nDIM,dbl_mb(k_dimxyz))) call errquit
@@ -105,7 +105,7 @@ c       Set covergence tolerance
      $   call errquit('dim_indDip: put dimtol failed',1,RTDB_ERR)
 c       Calculate the QM E-field from the QM density
         call dfill(3*nDIM, 0.0d0, dbl_mb(k_eqme),1)
-        call dimqm_EqmE2(rtdb, g_dens_comp, geom, basis,
+        call dimqm_eqme_gs(rtdb, g_dens_comp, geom, basis,
      $         dbl_mb(k_eqme), dbl_mb(k_dimxyz), nDIM, g_eqme)
 c
 c       Calculate the dipoles induced by the QM density
@@ -139,4 +139,4 @@ c     Clean up arrays
       if(.not.stat)
      $  call errquit('dimqm_indDip2 failed clean up',1,GA_ERR)
 c
-      end subroutine dimqm_indDipoles2
+      end subroutine dimqm_indDipoles_stat

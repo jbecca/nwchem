@@ -1,4 +1,4 @@
-      subroutine dim_eval_fnl2(ptnl, nq, qwght, xyz, qxyz, 
+      subroutine dim_eval_fnl_gs(ptnl, nq, qwght, xyz, qxyz, 
      $                           muind)
       implicit none
 c-----------------------------------------------------------------------
@@ -45,4 +45,4 @@ c  combine with grid weights
       enddo             !n 
 
       return
-      end subroutine dim_eval_fnl2
+      end subroutine dim_eval_fnl_gs

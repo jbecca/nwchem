@@ -1,4 +1,16 @@
-      subroutine dim_grid_static_gen(rtdb, g_vdim)
+      subroutine dim_grid_gs(rtdb, g_vdim)
+c
+      implicit none
+      integer rtdb
+      integer g_vdim
+
+      call dim_grid_gs_gen(rtdb, g_vdim, 1, 1, .false., 0, 1)
+
+      return
+      end
+c
+      subroutine dim_grid_gs_gen(rtdb, g_vdim,
+     &      nmat, calc_type, l3d, ipm, imag)
 
       implicit none
 
@@ -81,23 +93,20 @@ c
       data direction /'x', 'y', 'z'/
       data dpm /'+', '-'/
       data dri /'r', 'i'/
-      logical ldebug, id
+      integer nDIM
+      logical ldebug
 
 c
 c      call dimqm_get_debug(rtdb, ldebug)
-      nmat = 3 ! three for static response
-      calc_type = 2 ! solve for response, not gs
-      l3d = .true. ! using 3 dimensional GA for this routine
-      ipm = 0
-      imag = 1
-
+      ldebug = .true.
       me = ga_nodeid()
-      id = (me.eq.0)
       nproc = ga_nnodes()
       oprint = ldebug 
-      if (DIM_ldebug .and. id) 
-     $ write(luout,*)'starting dim_grid_static_gen'
-
+c      if(oprint) then
+c        write(luout,*) "dim_grid_quadv0 start"
+c        write(*,*) "GEOM:", geom
+c      end if
+c      oprint = .true.
       oprintw = util_print('quadrature warning', print_medium)
 c
       irdelchi_atom = 0
@@ -123,11 +132,6 @@ cng
          call grid_packing_info
       end if
 c
-c      if (oprint) then      
-c        write(*,*) " *** dim_grid_quadv0: calc_type:",calc_type 
-c        write(*,*) " *** dim_grid_quadv0: grid_written:",grid_written 
-c      end if
-c
 c     Set up logicals denoting calculation type
 c
       do_scf = calc_type .eq. 1
@@ -149,8 +153,11 @@ c
       len_Cmat2 = 1
       len_Mmat2 = 1
 c
-      len_rho = n_per_rec*(nmat+1)+n_per_rec
-
+      if (do_scf) then
+         len_rho = npol*n_per_rec
+      elseif (do_cpks_l) then
+         len_rho = n_per_rec*(nmat+1)+n_per_rec
+      endif
       if (.not. geom_ncent(geom, nctrs)) 
      &   call errquit('grid_den: geom_ncent failed',geom, GEOM_ERR)
       nxyz = 3*nctrs
@@ -276,12 +283,9 @@ c     Allocate and read in induced dipoles
      $                     l_muind, k_muind))
      $  call errquit('quadv0 malloc muind failed',2112, MA_ERR)
 
-      do idir = 1, nmat
-        if(.not.rtdb_get(rtdb,'dimqm:muind_'//direction(idir),
-     $                   mt_dbl, 3*DIM_nAtoms,
-     $                   dbl_mb(k_muind+i3*(idir-1))))
-     $  call errquit('get pert xyz dip failed quadv0',6,RTDB_ERR)
-      end do
+      call ga_init_fence()
+      call ga_get(g_DIMmuind, 1, DIM_nOrder, 1, 1, dbl_mb(k_muind), 1)
+      call ga_fence()
 
       call ga_sync()
 c      
@@ -295,7 +299,7 @@ c
           endif
          end if
 c
-         call dim_grid_static_a(ncoef_max,nctrs, 
+         call dim_grid_gs_a(ncoef_max,nctrs, 
      &        int_mb(iniz), int_mb(ifin), 
      &        dbl_mb(irho),  
      &        dbl_mb(iqwght), dbl_mb(iqxyz), dbl_mb(ixyz), 
@@ -305,13 +309,17 @@ c
      &        int_mb(icetobfr),
      ,        int_mb(iibf_ao), dbl_mb(irqbuf),
      ,        dbl_mb(irchi_atom), g_vdim,
-     ,        dbl_mb(k_dimxyz),
+     ,        nmat, do_scf, do_cpks_l,
+     ,        l3d, ipm, imag, dbl_mb(k_dimxyz),
      $        dbl_mb(k_muind), rtdb)
 c     
       
       if (.not.ma_chop_stack(lqxyz))
      &   call errquit('grid_den: cannot pop stack',0, MA_ERR)
       call ga_sync()
+      if(do_scf.and.(.not.l3d)) then
+          call ga_symmetrize(g_vdim)
+      endif
 c
       if (.not.MA_Free_Heap(lxyz))
      &   call errquit('grid_den: cannot free heap',0, MA_ERR)
@@ -326,12 +334,12 @@ C      end if
 
       return
       end
-
-      subroutine dim_grid_static_a(ncoef_max, natoms, iniz, ifin,
+      Subroutine dim_grid_gs_a(ncoef_max, natoms, iniz, ifin,
      $                            rho, qwght, qxyz, xyz, expo, ccoef,
      $                            Bmat, Fmat, Pmat, rq, cetobfr,
      $                            ibf_ao, rqbuf, rchi_atom, g_vdim,
-     $                            dimxyz, muind, rtdb)
+     $                            nmat, do_scf, do_cpks_l, l3d,
+     $                            ipm, imag, dimxyz, muind, rtdb)
 
       implicit none
 #include "errquit.fh"
@@ -389,13 +397,15 @@ c   Input Variables
       integer ipm
       integer imag
       double precision dimxyz(3, DIM_nAtoms)
-      double precision muind(3, DIM_nAtoms, 3)
+      double precision muind(3, DIM_nAtoms)
       integer rtdb, id
+      logical ldebug
 c
+      ldebug = .true.
       id = ga_nodeid()
-      if(DIM_ldebug.and.id.eq.0) then
-        write(luout,*) "dim_grid_static_a start"
-      end if
+c      if(ldebug.and.id.eq.0) then
+c        write(luout,*) "dim_grid_quadv0a start"
+c      end if
       
       if(n_rec_in_file.eq.0) goto 100
 c
@@ -446,13 +456,14 @@ c        temp put buf into currently used arrays qxyz and qwght
 c     
          call grid_repack(rqbuf, qxyz, qwght, nqpts, rad,istep)
          if(nqpts.ne.0) then
-            call dim_grid_static_b(
+            call dim_grid_gs_b(
      $              ictr_buf, qxyz, qwght, nqpts, rad,
      $              ncoef_max, natoms, iniz, ifin, rho,
      $              xyz, expo, Bmat, Fmat, Pmat, rq,
      $              cetobfr, ibf_ao, int_mb(ibas_cent_info),
      $              int_mb(ibas_cset_info), log_mb(idocset), rchi_atom,
-     $              g_vdim, dimxyz, muind, rtdb)
+     $              g_vdim, nmat, do_scf, do_cpks_l, l3d, ipm, imag,
+     $              dimxyz, muind, rtdb)
 c
              ntot_cube=ntot_cube+1
 c
@@ -467,19 +478,19 @@ c
      &     call errquit('grid_quadv0a: pop stack failed.',1, MA_ERR)
  100  continue
 c
-      if(DIM_ldebug) then
-        write(luout,*) "dim_grid_static_a end"
-      end if
+c      if(ldebug) then
+c        write(luout,*) "dim_grid_quadv0a end"
+c      end if
       call ga_sync
       return
       end
-
-      subroutine dim_grid_static_b(ictr_buf, qxyz, qwght, nqpts, rad,
+      subroutine dim_grid_gs_b(ictr_buf, qxyz, qwght, nqpts, rad,
      $                            ncoef_max, natoms, iniz, ifin, rho,
      $                            xyz, expo, Bmat, Fmat, Pmat, rq,
      $                            cetobfr, ibf_ao, bas_cent_info,
      $                            bas_cset_info, docset, rchi_atom,
-     $                            g_vdim, dimxyz, muind, rtdb)
+     $                            g_vdim, nmat, do_scf, do_cpks_l, l3d,
+     $                            ipm, imag, dimxyz, muind, rtdb)
 c
 c$Id: dim_grid_quadv0b.F 19821 2010-12-14 07:46:49Z d3y133 $
 c
@@ -528,7 +539,7 @@ c   Input Variables
       integer ipm
       integer imag
       double precision dimxyz(3, DIM_nAtoms) ! DIM Coordinates
-      double precision muind(3, DIM_nAtoms, 3) ! DIM Coordinates
+      double precision muind(3, DIM_nAtoms) ! DIM induced dipoles
       integer rtdb
 c      
 c   Local Variables 
@@ -552,9 +563,6 @@ c   Local Variables
       
       ldebug = .true.
       id = ga_nodeid()
-
-      if (DIM_ldebug .and. (id.eq.0)) 
-     $ write(luout, *)'starting dim_grid_static_b'
 c
       npol = (ipol*(ipol+1))/2
       acc_ao_gauss = dble(iaoacc)
@@ -616,26 +624,38 @@ c ---------------------
 c
 c     Evaluate the DIM potential
 c     Set up pointer to the SCF density for the CPKS LHS case.
-
-      call dim_eval_fnl_stat(rho, nqpts, qwght, dimxyz,
-     &      qxyz, muind, rtdb)
+c
+c      call dim_eval_fnl(rho, nqpts, qwght,
+c     &     dimxyz, qxyz, 
+c     $     nmat, ipm, imag, muind,nDIM, rtdb)
+      if (do_cpks_l) then
+            call dim_eval_fnl(rho, nqpts, qwght, dimxyz,
+     &            qxyz, nmat, ipm, imag, muind, DIM_nAtoms, rtdb)
+      else
+            call dim_eval_fnl_gs(rho, nqpts, qwght,
+     &            dimxyz, qxyz, 
+     $            muind,DIM_nAtoms, rtdb)
+      endif
 c       rho(1:nqpts*nmat) = 0.0d0
 c
 c   Transform the potential from over the quadrature points to the shape of the Fock Matrix
+      if(do_scf) then
 c
-!      call dim_tabcd_stat(Fmat, Pmat, rho, Bmat,
-!     $              dbl_mb(ichi_ao), nqpts, mbf_ao,
-!     $              nbf_ao_mxnbf_ce, nbf_ao_mxnbf_ce2,
-!     $              AO_bas_han, natoms, iniz, ifin, g_vdim,
-!     $              ibf_ao, cetobfr)
-      nmat = 3
-      l3d = .true.
-
-      call dim_tabcd(1, l3d, Fmat, Pmat, rho, Bmat,
+        call dim_tabcd(0, l3d, Fmat, Pmat, rho, Bmat,
+     $                   dbl_mb(ichi_ao), 1, nqpts, mbf_ao,
+     $                   nbf_ao_mxnbf_ce, nbf_ao_mxnbf_ce2,
+     $                   AO_bas_han, natoms, iniz, ifin, g_vdim,
+     $                   ibf_ao, cetobfr)
+c
+      else if (do_cpks_l) then
+c
+        call dim_tabcd(1, l3d, Fmat, Pmat, rho, Bmat,
      $                   dbl_mb(ichi_ao), nmat, nqpts, mbf_ao,
      $                   nbf_ao_mxnbf_ce, nbf_ao_mxnbf_ce2,
      $                   AO_bas_han, natoms, iniz, ifin, g_vdim,
      $                   ibf_ao, cetobfr)
+c
+      endif
 c         write(luout,*) "g_dim AFTER dim_tabcd"
 c         call ga_print(g_vxc)
 c
@@ -656,4 +676,4 @@ c      if(dprint) then
 c        write(luout,*) "end dim_grid_quadv0b"
 c      end if
       return
-      end subroutine dim_grid_static_b
+      end subroutine dim_grid_gs_b

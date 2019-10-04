@@ -2,7 +2,7 @@
 c-----------------------------------------------------------------------
 c  Author: Jeff Becca
 c  Calls: dimqm_iterative2
-c  Called from: dimqm_main2
+c  Called from: dimqm_gs
 c  Purpose: wrapper routine that prepares the fld to be used in solver
 c-----------------------------------------------------------------------
       implicit none

@@ -1,8 +1,8 @@
-      subroutine dimqm_EqmE2(rtdb, g_dens, geom, basis, 
+      subroutine dimqm_eqme_gs(rtdb, g_dens, geom, basis, 
      $               fld, xyz, nDIM, g_eqme)
 c-----------------------------------------------------------------------
 c  Author: Jeff Becca
-c  Called from:   dimqm_main2
+c  Called from:   dimqm_gs
 c  Calls:   hnd_elfcon
 c  Purpose: This routine calculates the DIM field contribution from the
 c           QM electrons.
@@ -43,6 +43,6 @@ c      if (ldebug.and.id.eq.0) write(luout,*)'Starting EqmE2'
       call ga_sync()
 c      call ga_print(g_eqme)
 c      if (ldebug.and.id.eq.0) write(luout,*)'Exiting EqmE2'
-      end subroutine dimqm_EqmE2
+      end subroutine dimqm_eqme_gs
 
 

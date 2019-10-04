@@ -1,8 +1,8 @@
-      subroutine dimqm_EqmN2(rtdb, geom, xyz, g_eqmn, nDIM)
+      subroutine dimqm_eqmn_gs(rtdb, geom, xyz, g_eqmn)
 c-----------------------------------------------------------------------
 c  Author: Jeff Becca
 c  Calls: dimqm_fldpot
-c  Called from: dimqm_main2
+c  Called from: dimqm_gs
 c  Purpose: get field contribution from QM nuclei
 c-----------------------------------------------------------------------
       implicit none
@@ -14,9 +14,10 @@ c-----------------------------------------------------------------------
 #include "global.fh"
 #include "geom.fh"
 #include "msgids.fh"
+#include "dimqm.fh"
 c------------------------------Input variables--------------------------
-      integer rtdb, geom, nDIM, g_eqmn
-      double precision xyz(3,nDIM)
+      integer rtdb, geom, g_eqmn
+      double precision xyz(3,DIM_nAtoms)
 c      double precision eqmn(3,nDIM)
 c-------------------------------Local variables-------------------------
       integer id, nNuc, l_qmxyz, k_qmxyz, l_qmchrg, k_qmchrg
@@ -28,7 +29,7 @@ c-------------------------------Local variables-------------------------
 
 c  gather QM geom data
       if(.not.geom_ncent(geom, nNuc))
-     $   call errquit('dimqm_eqmn2: geom ncent?',1,GEOM_ERR)
+     $   call errquit('dimqm_eqmn_gs: geom ncent?',1,GEOM_ERR)
 
 c  allocate memory for qm coords
       if(.not.ma_push_get(mt_dbl,3*nNuc,'QM xyz',l_qmxyz,k_qmxyz))
@@ -43,13 +44,13 @@ c  get values for arrays
      $   call errquit('EqmN2: get charges failed',1,GEOM_ERR)
 
       call dimqm_fldpot2(rtdb, xyz, dbl_mb(k_qmxyz), 
-     $                        dbl_mb(k_qmchrg),g_eqmn, nNuc, nDIM)
+     $                        dbl_mb(k_qmchrg),g_eqmn, nNuc, DIM_nAtoms)
 c  TODO find a way to use all GA's and use ga operations
 c  Deallocate mem
       if(.not.ma_chop_stack(l_qmxyz))
      $   call errquit('EqmN2: chop l_qmxyz failed',1,MA_ERR)
 
-      end subroutine dimqm_EqmN2
+      end subroutine dimqm_eqmn_gs
 
       
 

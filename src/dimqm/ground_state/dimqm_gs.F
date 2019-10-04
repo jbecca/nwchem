@@ -1,7 +1,7 @@
-      subroutine dimqm_main2(rtdb, basis, geom, g_dens, lastcy)
+      subroutine dimqm_gs(rtdb, basis, geom, g_dens, lastcy)
 c     Author: Jeff Becca
 c     called from: nwdft/scf_dft/dft_scf.F
-c     subroutines called:  dimqm_EqmN2, dimqm_EqmE2, dimqm_f2d2
+c     subroutines called:  dimqm_eqmn_gs, dimqm_eqme_gs, dimqm_f2d2
 c ----------------------------------------------------------------------
 c  This is the main driver for DIM/QM. It is called every ground state
 c  SCF cycle. currently modeled off of dimqm_main
@@ -46,34 +46,34 @@ c----------------------------
       if (lfirst) call ga_zero(g_DIMmuold)
 c ----------------- Initialize GA's used in DIM cycle ------------------
       if(.not.ga_create(mt_dbl,DIM_nOrder,1,'g_eqme',0,0,g_eqme))
-     $   call errquit('dimqm_main2: create g_eqme failed',0,GA_ERR)
+     $   call errquit('dimqm_gs: create g_eqme failed',0,GA_ERR)
       call ga_zero(g_eqme)
       if(.not.ga_create(mt_dbl,DIM_nOrder,1,'g_eqmn',0,0,g_eqmn))
-     $   call errquit('dimqm_main2: create g_eqmn failed',0,GA_ERR)
+     $   call errquit('dimqm_gs: create g_eqmn failed',0,GA_ERR)
       call ga_zero(g_eqmn)
       if(.not.ga_create(mt_dbl,DIM_nOrder,1,'g_etot',0,0,g_etot))
-     $   call errquit('dimqm_main2: create g_etot failed',0,GA_ERR)
+     $   call errquit('dimqm_gs: create g_etot failed',0,GA_ERR)
       call ga_zero(g_etot)
 c  allocate a bunch of persistant arrays. Kill at the end of main
       if(.not.ma_push_get(mt_dbl,3*DIM_nAtoms,'dimqm:dimxyz',l_dimxyz,
-     $   k_dimxyz)) call errquit('dimqm_main2: malloc k_dimxyz failed',
+     $   k_dimxyz)) call errquit('dimqm_gs: malloc k_dimxyz failed',
      $   1,MA_ERR)
       if(.not.ma_alloc_get(mt_dbl,3*DIM_nAtoms,'dimqm:eqme',l_eqme,
-     $   k_eqme)) call errquit('dimqm_main2: malloc k_eqme failed',
+     $   k_eqme)) call errquit('dimqm_gs: malloc k_eqme failed',
      $   1,MA_ERR)
       if(.not.ma_alloc_get(mt_dbl,3*DIM_nAtoms,'dimqm:muind',l_muind,
-     $   k_muind)) call errquit('dimqm_main2: malloc k_muind failed',
+     $   k_muind)) call errquit('dimqm_gs: malloc k_muind failed',
      $   1,MA_ERR)
 c  get and allocate coords
       if(.not.rtdb_get(rtdb,'dimqm:coords',mt_dbl,
      $      3*DIM_nAtoms,dbl_mb(k_dimxyz))) call errquit
      $      ('dimmain2: xyz rtdb get failed',1,RTDB_ERR)
 c  Call EqmN2 to get the field contributions due to QM nuclei
-      call dimqm_EqmN2(rtdb, geom, dbl_mb(k_dimxyz), g_eqmn, DIM_nAtoms)
+      call dimqm_eqmn_gs(rtdb, geom, dbl_mb(k_dimxyz), g_eqmn)
 c  Zero EqmE
       call dfill(3*DIM_nAtoms, 0.0d0, dbl_mb(k_eqme), 1)
 c  Call EqmE to get field contributions due to QM e-
-      call dimqm_EqmE2(rtdb, g_dens, geom, basis, 
+      call dimqm_eqme_gs(rtdb, g_dens, geom, basis, 
      $         dbl_mb(k_eqme), dbl_mb(k_dimxyz), DIM_nAtoms, g_eqme)
 c  put last cycles dipoles into g_DIMmuold and zero g_DIMmuind for this cycle
       call ga_copy(g_DIMmuind, g_DIMmuold)
@@ -153,7 +153,7 @@ cc      enddo
       stat = stat.and.ga_destroy(g_eqmn)
       stat = stat.and.ga_destroy(g_etot)
       if (.not.stat) 
-     $   call errquit('dimqm_main2:free stack failed',1,MA_ERR)
+     $   call errquit('dimqm_gs:free stack failed',1,MA_ERR)
 
       if(lastcy) then
          if(id.eq.0) then
@@ -169,13 +169,13 @@ c  TODO
          endif
          call dimqm_destroy(rtdb)
       endif
-      end subroutine dimqm_main2
+      end subroutine dimqm_gs
 
       subroutine dimqm_dip_err(new, old, maxerr)
 c-----------------------------------------------------------------------
 c  Author: Jeff Becca
 c  Calls: Nothing
-c  Called from: dimqm_main2
+c  Called from: dimqm_gs
 c  Purpose: get max err from allocated arrays
       implicit none
 #include "global.fh"
@@ -193,7 +193,7 @@ c------------------------------ Input variables ------------------------
 c-----------------------------------------------------------------------
 c  Author: Jeff Becca
 c  Calls: Nothing
-c  Called from: dimqm_main2
+c  Called from: dimqm_gs
 c  Purpose: Calculate DIM/QM interaction energy
 c-----------------------------------------------------------------------
       implicit none
@@ -216,3 +216,46 @@ c      dimqm_energy2 = tmp1 + tmp2
       dimqm_energy2 = -0.5d0*(tmp1 + tmp2)
       return
       end function dimqm_energy2
+
+      function calcErr(n, old, new)
+      implicit none
+#include "stdio.fh"
+      integer n
+      double precision old(n)
+      double precision new(n)
+      double precision calcErr
+      double precision temp(n)
+c
+      temp(:) = new(:) - old(:)
+      calcErr = MAXVAL(temp)
+      if (ABS(MINVAL(temp)) > calcErr) then
+         calcErr = ABS(MINVAL(temp))
+      end if
+      return
+c
+      end function calcErr
+
+      function dime(eqme, eqmn, muind, nAtoms)
+      implicit none
+#include "dimqm_constants.fh"
+      integer nAtoms
+      double precision eqme(3,nAtoms)
+      double precision eqmn(3,nAtoms)
+      double precision muind(3,nAtoms)
+      double precision dime
+      
+      dime = -HALF * SUM(muind * eqme)
+      dime = dime +(-HALF)* SUM(muind * eqmn)
+      return
+      end function dime
+
+      subroutine print_dim(array, nel, label)
+      implicit none
+#include "stdio.fh"
+      integer nel
+      double precision array(3,nel)
+      character*4 label
+      write(luout,*) label
+      write(luout,*) array
+      call util_flush(LuOut)
+      end subroutine print_dim

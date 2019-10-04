@@ -50,7 +50,7 @@ c while g_muold isn't used, for this single cycle run, if it is not
 c created, segfaults happen. TODO: find better way for this to work
       call dimqm_init(rtdb)
       call ga_sync()
-      call dimqm_main2(rtdb, basis, geom, g_dens, .true.)
+      call dimqm_gs(rtdb, basis, geom, g_dens, .true.)
       if (.not.ga_create(MT_DBL, nbf, nbf, 'DIM FOCK', -1, -1, g_dim))
      $  call errquit('dimqm_rohf_wrap: create dim fock failed', 1,
      $               GA_ERR)
@@ -111,7 +111,7 @@ c     Local Variables
 c   !     call dimqm_check_dipoles(rtdb, 1.0d0, rmax)
     !  end if
       ! Calculate DIM dipoles
-      call dimqm_indDipoles2(rtdb, nbf, geom, basis, 
+      call dimqm_indDipoles_stat(rtdb, nbf, geom, basis, 
      $                         g_dens, DIM_nAtoms)
       
       ! Build potential from dipoles

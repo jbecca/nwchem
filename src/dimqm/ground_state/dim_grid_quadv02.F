@@ -1,4 +1,4 @@
-      subroutine dim_grid_quadv02(rtdb, g_vdim)
+      subroutine dim_grid_gs(rtdb, g_vdim)
 c
       implicit none
       integer rtdb

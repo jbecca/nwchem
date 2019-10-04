@@ -37,14 +37,10 @@ c      data dpm /'+', '-'/
 c      data dri /'r', 'i'/
 c
       id = ga_nodeid()
-      if (DIM_ldebug.and.(id.eq.0)) then
-            write(luout,*)'starting dim_eval_fnl_stat'
-      endif
-      write(luout,*)'nq: ', nq
+      !if (DIM_ldebug.and.(id.eq.0)) then
+      !      write(luout,*)'starting dim_eval_fnl_stat'
+      !endif
 c
-!      if (.not. rtdb_get(rtdb, 'dimqm:scrnType', mt_int, 1, scrnType))
-!     $   call errquit('dim_eval_fnl: scrnType get failed',1,RTDB_ERR)
-
 c   Zero potential array
       call dfill(nq*3, 0.d0, ptnl, 1)
 c      muind = ZERO

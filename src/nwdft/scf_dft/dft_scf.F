@@ -1148,7 +1148,7 @@ c
         call dimqm_getlfirst(rtdb, lfirst)
         if (lfirst) call dimqm_init(rtdb)
 c        call dimqm_main(rtdb, ao_bas_han, geom, g_dens, .false.,nDIM)
-        call dimqm_main2(rtdb, ao_bas_han, geom, g_dens, .false.)
+        call dimqm_gs(rtdb, ao_bas_han, geom, g_dens, .false.)
       end if
 c
 c     Determine HOMO energy (for Zhan-Nichols-Dixon AC)
@@ -2116,7 +2116,7 @@ c     Final DIM dipoles
 c
       if (ldimqm) then
 c        call dimqm_main(rtdb, ao_bas_han, geom, g_dens, .true., nDIM)
-        call dimqm_main2(rtdb, ao_bas_han, geom, g_dens, .true.)
+        call dimqm_gs(rtdb, ao_bas_han, geom, g_dens, .true.)
       end if
 
 c

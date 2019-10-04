@@ -149,7 +149,7 @@ c     $     nmat, ipm, imag, muind,nDIM, rtdb)
             call dim_eval_fnl(rho, nqpts, qwght, dimxyz,
      &            qxyz, nmat, ipm, imag, muind, rtdb)
       else
-            call dim_eval_fnl2(rho, nqpts, qwght,
+            call dim_eval_fnl_gs(rho, nqpts, qwght,
      &            dimxyz, qxyz, 
      $            muind, rtdb)
       endif
