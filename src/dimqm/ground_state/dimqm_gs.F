@@ -109,6 +109,8 @@ c        when creating potential
 c        ** NOTE ** it should be looked into for having the potential 
 c        created and stored to rtdb instead. should be much smaller
 c        than the dipoles since it only needs to apply to QM grid   
+c        ** NEWER NOTE ** screw this writing to disk nonsense. Lets
+c        keep it all in memory. 
       call ga_init_fence()
       call ga_get(g_DIMmuind, 1, DIM_nOrder, 1, 1, dbl_mb(k_muind), 1)
       call ga_fence()

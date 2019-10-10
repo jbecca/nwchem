@@ -28,7 +28,7 @@ end
 dimqm
  PIM
  Algorithm 1
- screen EXP 1.0d0
+ screen none
  tolerance 1.0d-7
 end
 

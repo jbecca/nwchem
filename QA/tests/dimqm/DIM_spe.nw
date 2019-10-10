@@ -29,8 +29,7 @@ dimqm
  debug
  PIM
  Algorithm 1
- screen EXP 1.0d0
- tolerance 1.0d-7
+ screen none
 end
 
 dimpar
