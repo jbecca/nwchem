@@ -1,4 +1,4 @@
-   OBJ = 
+   OBJ = dimqm_FD_cycle.o
 
    LIBRARY = libdimqm.a
 

@@ -84,15 +84,15 @@ c   Allocate new arrays
 c      if(.not.ma_push_get(mt_dbl,i3*2,'dimrsp:fld',l_fld,k_fld))
 c     $  call errquit('malloc dimrsp:fld failed',1,MA_ERR)
 c
-      if(.not.ma_push_get(mt_dbl,i3*2,'dimrsp:muind',
-     $                                            l_muind,k_muind))
-     $  call errquit('malloc dimrsp:muind failed',1,MA_ERR)
+C      if(.not.ma_push_get(mt_dbl,i3*2,'dimrsp:muind',
+C     $                                            l_muind,k_muind))
+C     $  call errquit('malloc dimrsp:muind failed',1,MA_ERR)
 c
 c      if(.not.ma_push_get(mt_dbl,i3,'dimrsp:xyz',l_dimxyz,k_dimxyz))
 c     $  call errquit('malloc dimrsp:xyz failed',1,MA_ERR)
 c
-      if(.not.rtdb_get(rtdb,'dimqm:coords', mt_dbl, i3, dimxyz))
-     $  call errquit('get dimqm:coords failed', 1, RTDB_ERR)
+C      if(.not.rtdb_get(rtdb,'dimqm:coords', mt_dbl, i3, dimxyz))
+C     $  call errquit('get dimqm:coords failed', 1, RTDB_ERR)
 c
       g_dens_comp_r = ga_create_atom_blocked(geom,basis,
      $                          'real density matrix comp')

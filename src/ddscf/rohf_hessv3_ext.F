@@ -1092,7 +1092,7 @@ c ---- Copy g_z --> g_x_reim ------ END
 
       if (ldimqm) then
             call dimqm_getnDIM(bgj_get_rtdb_handle(), nDIM)
-            call dimqm_addop_cmplx(
+            call dimqm_FD_cycle(
      &            bgj_get_rtdb_handle(),
      &            geom,
      &            basis,
@@ -1100,7 +1100,8 @@ c ---- Copy g_z --> g_x_reim ------ END
      &            ncomp,
      &            limag,
      &            lifetime,
-     &            nDIM)
+     &            nDIM,
+     &            g_dens)
       endif
 c ------- Remove GA arrays:
       do ipm = 1,ncomp
