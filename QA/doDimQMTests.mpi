@@ -1,0 +1,25 @@
+#!/bin/csh -f
+#
+# $Id$
+#
+# jochen: modification of doqmtests.mpi, I really want only a few
+# small tests for HF, DFT, response, TDDFT
+#
+set np = 1
+if ($1 !="") then
+  set np = $1
+endif
+  echo
+  echo " ============================"
+  echo " QM: Running all DIM/QM Tests"
+  echo " ============================"
+  echo
+endif
+#
+#---   DIM/QM Tests
+./runtests.mpi.unix procs $np dimqm_spe
+./runtests.mpi.unix procs $np dimqm_spe_uhf
+./runtests.mpi.unix procs $np dimqm_static_pol
+./runtests.mpi.unix procs $np dimqm_static_pol_uhf
+./runtests.mpi.unix procs $np dimqm_fd_pol
+./runtests.mpi.unix procs $np dimqm_fd_pol_uhf

@@ -19,6 +19,7 @@ driver
 end
 
 dft
+ odft
  iterations 200
  xc b3lyp
  grid medium 
@@ -99,8 +100,7 @@ dimpar
 END
 
 property
- aoresponse 1 0.10
- damping 0.0037
+ aoresponse
 end
 
 task dft property  

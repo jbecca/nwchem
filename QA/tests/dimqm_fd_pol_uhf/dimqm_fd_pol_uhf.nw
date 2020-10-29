@@ -21,14 +21,14 @@ end
 dft
  odft
  iterations 200
- xc b3lyp
+ xc xpbe96 1.0 cpbe96 1.0
  grid medium 
 end
 
 dimqm
  PIM
  Algorithm 1
- screen none
+ screen GAU 1.0d0
  tolerance 1.0d-7
 end
 
@@ -100,8 +100,9 @@ dimpar
 END
 
 property
- aoresponse
+ aoresponse 1 0.14
 end
-
-task dft property  
+set dbg:xterm /usr/bin/xterm
+set dbg:gdb /opt/intel/compilers_and_libraries_2017.0.064/linux/bin/intel64/gdb-ia
+task dft property  #debug
 

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+export NWCHEM_TOP=/Users/jeffreybecca/Projects/nwchem-myfork
+export NWCHEM_TARGET=MACX64
+export NWCHEM_MODULES=smallqm
+export USE_INTERNALBLAS=y
+export USE_MPI=y
+export CFLAGS_FORGA='-DMPICH_NO_ATTR_TYPE_TAGS'
+export USE_DEBUG=y
+export CC=gcc-8
+export FC=gfortran-8

@@ -69,6 +69,9 @@ c      call dimqm_get_noseed(rtdb, dimqm_noseed)
      $   call errquit('dimqm_indDip2: create g_eqme failed',0,GA_ERR)
       if(.not.ga_create(mt_dbl,i3,1,'g_muind',0,0,g_muind))
      $   call errquit('dimqm_indDip2: create g_muind failed',0,GA_ERR)
+      if(.not.ma_alloc_get(mt_dbl,3*DIM_nAtoms,'dimqm:muind',l_muind,
+     $   k_muind)) call errquit('dimqm_gs: malloc k_muind failed',
+     $   1,MA_ERR)
 c
       g_dens_comp = ga_create_atom_blocked(geom,basis,
      $                          'density matrix comp')
@@ -132,6 +135,7 @@ c
 c     Clean up arrays
       stat = .true.
       stat = stat .and. ma_free_heap(l_eqme)
+      stat = stat .and. ma_free_heap(l_muind)
       stat = stat .and. ma_chop_stack(l_dimxyz)
       stat = stat .and. ga_destroy(g_eqme)
       stat = stat .and. ga_destroy(g_muind)
