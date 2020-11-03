@@ -1180,7 +1180,11 @@ c     Calculate the DIM polarizability
         if (debug) write(luout,*)'calling dimqm_prep for pol'
 c        call dimqm_prep(rtdb, omega)
         if (debug) write(luout,*)'calling dimqm_pol'
-        call dimqm_polarizability(rtdb, omega)
+        if (omega < 1.0d-4) then
+          call dimqm_pol_static(rtdb)
+        else
+          call dimqm_polarizability(rtdb, omega)
+        endif
         if (debug) write(luout,*)'calling dimqm_tidy'
 c        call dimqm_tidy()
       end if

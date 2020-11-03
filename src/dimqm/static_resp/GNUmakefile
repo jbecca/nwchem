@@ -1,7 +1,8 @@
    OBJ = dim_grid_static.o\
          dim_eval_fnl_stat.o\
          dim_tabcd_stat.o\
-         dimqm_indDipoles_stat.o
+         dimqm_indDipoles_stat.o\
+         dimqm_pol_static.o
 
    LIBRARY = libdimqm.a
 

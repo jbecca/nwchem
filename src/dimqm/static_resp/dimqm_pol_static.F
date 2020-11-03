@@ -1,4 +1,4 @@
-      subroutine dimqm_polarizability(rtdb, om)
+      subroutine dimqm_pol_static(rtdb)
 c  ==================================================================
 c  Calculate the standalone polarizability of the DIM system.  Here,
 c  we apply a unit field in each cartesian direction and determine
@@ -21,7 +21,6 @@ c  ==================================================================
 c
 c     Input variables
       integer rtdb        ! RTDB handle
-      double precision om ! Frequency of incident light (zero if static calculation)
 c
 c     MA handles
       integer k_fld, l_fld
@@ -43,6 +42,7 @@ c     Local variables
       integer nDIM, nOrder
       logical lfirst
       logical ldebug
+      integer g_fld
 c
 c   Common variables used
 c      logical lcpim, lcmplx, ldebug
@@ -53,14 +53,11 @@ c   Initialize
 c   ==========
 c
       call dimqm_getnDIM(rtdb, nDIM)
-      nOrder = 3*nDIM
+      i3 = 3*DIM_nAtoms
       call dimqm_get_debug(rtdb, ldebug)
-      i3 = 3 * nDIM
       id = ga_nodeid()
-      icmplx = 1
-      if(om > ZERO) icmplx = 2
       if(id.eq.0.and.ldebug) write(LuOut,*)
-     $   "Begin Standalone Polarizability Routine"
+     $   "Begin dimqm_pol_static routine"
 c
 c   ========================
 c   Allocate arrays and fill
@@ -72,6 +69,10 @@ c     Coords
       if(.not.rtdb_get(rtdb,'dimqm:coords',mt_dbl,i3,dbl_mb(k_dimxyz)))
      $   call errquit('dimqm:coords rtdb get failed',1,RTDB_ERR)
 c
+c     GAs
+      if(.not.ga_create(mt_dbl,DIM_nOrder,1,'g_fld',0,0,g_fld))
+     $   call errquit('dimqm_gs: create g_fld failed',0,GA_ERR)
+      call ga_zero(g_fld)
 c     Induced Dipoles
 c      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dim muind',
 c     $                                            l_muind,k_muind))
@@ -81,7 +82,7 @@ c     $                                            l_muold,k_muold))
 c     $   call errquit('dimqm_pol malloc k_muind failed',1,MA_ERR)
 c
 c     Applied Field
-      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dim fld',l_fld,k_fld))
+      if(.not.ma_push_get(mt_dbl,i3,'dim fld',l_fld,k_fld))
      $   call errquit('dimqm_pol malloc k_fld failed',1,MA_ERR)
 c
 c   Zero polarizability
@@ -102,48 +103,29 @@ c
       do idir = 1, 3
 c
 c           Zero field
-          call dfill(i3*icmplx, ZERO, dbl_mb(k_fld), 1)
-          call dfill(i3*icmplx, ZERO, dbl_mb(k_muold), 1)
+          call dfill(i3, ZERO, dbl_mb(k_fld), 1)
 c
 c           Unit field in specified direction
-          call dfill(nDIM, ONE, dbl_mb(k_fld+idir-1), 3)
-          !call ga_put(g_fld, 1, nOrder, 1, 1, fld, 1)
+          call dfill(DIM_nAtoms, 1.0d0, dbl_mb(k_fld+idir-1), 3)
+          call ga_put(g_fld, 1, DIM_nOrder, 1, 1, dbl_mb(k_fld), 1)
           call ga_sync()
 
-          call dimqm_f2d(rtdb, dbl_mb(k_fld),
-     $                   dbl_mb(k_muind), dbl_mb(k_muold),
-     $                   dbl_mb(k_dimxyz), icmplx, 's',nDIM)
+          call dimqm_iterative2(rtdb, g_fld, dbl_mb(k_dimxyz),
+     $             DIM_nAtoms)
+          call ga_get(g_fld, 1, DIM_nOrder, 1, 1, dbl_mb(k_fld), 1)
 c           Sum up dipoles to get polarizability
-          pol(1,idir,1) = dsum(nDIM, dbl_mb(k_muind), 3)
-          pol(2,idir,1) = dsum(nDIM, dbl_mb(k_muind+1), 3)
-          pol(3,idir,1) = dsum(nDIM, dbl_mb(k_muind+2), 3)
-          if(icmplx > 1) then
-            pol(1,idir,2) = dsum(nDIM, dbl_mb(k_muind+nOrder), 3)
-            pol(2,idir,2) = dsum(nDIM, dbl_mb(k_muind+1+nOrder), 3)
-            pol(3,idir,2) = dsum(nDIM, dbl_mb(k_muind+2+nOrder), 3)
-          end if
+          pol(1,idir,1) = dsum(DIM_nAtoms, dbl_mb(k_fld), 3)
+          pol(2,idir,1) = dsum(DIM_nAtoms, dbl_mb(k_fld+1), 3)
+          pol(3,idir,1) = dsum(DIM_nAtoms, dbl_mb(k_fld+2), 3)
       end do
 c
 c   Print polarizability
       if(id.eq.0) then
-        if(om > ZERO) then
-          write(luout,5000) "Frequency-Dependent Real",
-     $                      pol(1,1,1), pol(1,2,1), pol(1,3,1),
-     $                      pol(2,1,1), pol(2,2,1), pol(2,3,1),
-     $                      pol(3,1,1), pol(3,2,1), pol(3,3,1) 
-          write(luout,*)
-          write(luout,5000) "Frequency-Dependent Imag",
-     $                      pol(1,1,2), pol(1,2,2), pol(1,3,2),
-     $                      pol(2,1,2), pol(2,2,2), pol(2,3,2),
-     $                      pol(3,1,2), pol(3,2,2), pol(3,3,2)
-          write(luout,*)
-        else
           write(luout,5000) "Static",
      $                      pol(1,1,1), pol(1,2,1), pol(1,3,1),
      $                      pol(2,1,1), pol(2,2,1), pol(2,3,1),
      $                      pol(3,1,1), pol(3,2,1), pol(3,3,1)
           write(luout,*)
-        end if
         call util_flush(LuOut)
       end if
       dimqm_noseed = seed_save
@@ -168,5 +150,5 @@ c  jbecca END
      $       1x,'-----------------------------------------------')
 
 
-      end subroutine dimqm_polarizability
+      end subroutine dimqm_pol_static
 
