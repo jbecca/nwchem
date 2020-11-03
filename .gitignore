@@ -132,3 +132,15 @@ QA/tests/dimqm/*.out
 src/peigs/peigs_stamp.LINUX64
 src/util/util_version.F
 
+dimqm_spe.db
+dimqm_spe.gridpts.0
+dimqm_spe.movecs
+dimqm_static_pol.cfock
+dimqm_static_pol.db
+dimqm_static_pol.gridpts.0
+dimqm_static_pol.movecs
+logfile.txt
+nwchem.code-workspace
+src/peigs/peigs_stamp.MACX64
+src/tools/gcc-8.CC.stamp
+src/tools/gfortran-8.FC.stamp
