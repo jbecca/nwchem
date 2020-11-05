@@ -144,3 +144,7 @@ nwchem.code-workspace
 src/peigs/peigs_stamp.MACX64
 src/tools/gcc-8.CC.stamp
 src/tools/gfortran-8.FC.stamp
+dimqm_static_pol_uhf.db
+dimqm_static_pol_uhf.gridpts.0
+dimqm_static_pol_uhf.movecs
+QA/tests/dimqm_static_pol_uhf/.dimqm_static_pol_uhf.nw.swp
