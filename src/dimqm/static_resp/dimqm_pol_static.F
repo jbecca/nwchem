@@ -4,7 +4,7 @@ c  Calculate the standalone polarizability of the DIM system.  Here,
 c  we apply a unit field in each cartesian direction and determine
 c  the DIM system's response.
 c
-c  Called from: property/aoresponse_driver.F
+c  Called from: property/aoresponse_driver_new.F
 c  ==================================================================
       implicit none
 #include "errquit.fh"
@@ -26,33 +26,25 @@ c     MA handles
       integer k_fld, l_fld
       integer l_dimxyz, k_dimxyz ! DIM coordinates handles
       integer l_muind,  k_muind  ! DIM dipoles handles
-      integer l_muold,  k_muold
 c
 c     Local variables
-      integer idir, m, i3
-      integer icmplx
+      integer idir, i3
       double precision pol(3,3,2)
       double precision time
       logical stat
       integer id
       double precision dsum
       external dsum
-      logical seed_save
-      logical dimqm_noseed
-      integer nDIM, nOrder
+!      logical seed_save
+!      logical dimqm_noseed
       logical lfirst
       logical ldebug
       integer g_fld
-c
-c   Common variables used
-c      logical lcpim, lcmplx, ldebug
-c      integer nOrder, nDIM
 c
 c   ==========
 c   Initialize 
 c   ==========
 c
-      call dimqm_getnDIM(rtdb, nDIM)
       i3 = 3*DIM_nAtoms
       call dimqm_get_debug(rtdb, ldebug)
       id = ga_nodeid()
@@ -77,9 +69,6 @@ c     Induced Dipoles
 c      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dim muind',
 c     $                                            l_muind,k_muind))
 c     $   call errquit('dimqm_pol malloc k_muind failed',1,MA_ERR)
-c      if(.not.ma_push_get(mt_dbl,i3*icmplx,'dim:muold',
-c     $                                            l_muold,k_muold))
-c     $   call errquit('dimqm_pol malloc k_muind failed',1,MA_ERR)
 c
 c     Applied Field
       if(.not.ma_push_get(mt_dbl,i3,'dim fld',l_fld,k_fld))
@@ -96,10 +85,6 @@ c
       time = util_timer()
       lfirst = .true.
       call dimqm_setlfirst(rtdb, lfirst)
-      seed_save = dimqm_noseed
-      dimqm_noseed = .true.
-      if(.not.rtdb_put(rtdb,'dimqm:noseed',mt_log,1,dimqm_noseed))
-     $  call errquit('dimqm_input: noseed put failed', 1, RTDB_ERR)
       do idir = 1, 3
 c
 c           Zero field
@@ -128,17 +113,12 @@ c   Print polarizability
           write(luout,*)
         call util_flush(LuOut)
       end if
-      dimqm_noseed = seed_save
 c
 c   ==============================
 c   Deallocate arrays and clean up
 c   ==============================
 c
       stat = ma_chop_stack(l_dimxyz)
-c  jbecca START: dont think we need to create and destroy int mat here.
-c        this is called from ao_driver_new, where it is already made
-c      call dimqm_tidy()
-c  jbecca END
       if(id .eq. 0) write(LuOut,*)
      $  "Total time:", util_timer() - time
  5000 format("Polarizability tensor for DIM system: ", A ,/

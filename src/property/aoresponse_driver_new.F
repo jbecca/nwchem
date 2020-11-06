@@ -1183,7 +1183,7 @@ c        call dimqm_prep(rtdb, omega)
         if (omega < 1.0d-4) then
           call dimqm_pol_static(rtdb)
         else
-          call dimqm_polarizability(rtdb, omega)
+          call dimqm_pol_FD(rtdb, omega)
         endif
         if (debug) write(luout,*)'calling dimqm_tidy'
 c        call dimqm_tidy()

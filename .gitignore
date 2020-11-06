@@ -148,3 +148,7 @@ dimqm_static_pol_uhf.db
 dimqm_static_pol_uhf.gridpts.0
 dimqm_static_pol_uhf.movecs
 QA/tests/dimqm_static_pol_uhf/.dimqm_static_pol_uhf.nw.swp
+dimqm_fd_pol.cfock
+dimqm_fd_pol.db
+dimqm_fd_pol.gridpts.0
+dimqm_fd_pol.movecs
