@@ -1,9 +1,8 @@
-      subroutine qmr_real2(rtdb, nlen, g_work, niter, tol, ierr,
-     $                 g_fld, matvec, xyz, ldebug, 
-     $                  g_dim_diag_real, nDIM, nDIMTypes)
+      subroutine qmr_complex2(rtdb, nlen, g_work, niter, tol, ierr,
+     $                    g_fld, matvec, xyz, ldebug, 
+     $                     g_dim_diag_cplx, nDIM, nDIMTypes)
 c
 c     Fancy QMR algorithm.  Will document later.
-c      use constants
       implicit None
 #include "errquit.fh"
 #include "inp.fh"
@@ -20,30 +19,29 @@ c
 c     Input Variables
       integer rtdb
       integer nlen
-      integer g_work(6)
+      integer g_work(7)
       integer niter
       double precision tol
       integer ierr
-c      integer g_unknowns
       external matvec
-      double precision xyz(3,nDIM)
+      double precision xyz(3,*)
       integer g_fld
       logical ldebug
-      integer g_dim_diag_real
+      integer g_dim_diag_cplx
       integer nDIM, nDIMTypes
 c
 c     Local variables
       integer maxiter
-      double precision d_n, e_n
-      double precision sinn, cosn
-      double precision rhs_n, rhs_n_plus1
-      double precision l_n, l_n_plus1
-      double precision res_0, res_n, res_n_minus1, res_n_plus1
-      double precision omegamax, omega
+      complex*16 d_n, e_n, l_n
+      complex*16 sinn, scs
+      complex*16 rhs_n, rhs_n_plus1
+      complex*16  res_n, res_n_minus1, res_n_plus1
+      complex*16 u_n_minus1, dtmp
+      double precision l_n_plus1
+      double precision omegamax, omega, cosn, res_0
       double precision res_nrm, res_nrm_upper_bound, nrm_check
       double precision nrm_tol, min_tol, max_tol
-      double precision scv, scpn, scs
-      double precision u_n_minus1, dtmp
+      double precision scv, scpn, tmp
       integer i
       integer id
       double precision time
@@ -53,30 +51,25 @@ c     BLAS/LAPACK routines
       double precision  dlamch
       double precision dnrm2
       external dnrm2
-      external drotg
+      external zrotg
       call ga_sync()
 c
 c     Get node ID
       id = ga_nodeid()
-c      if(id.eq.0.and.ldebug) then
-c        write(LuOut,*) "Start QMR real routine"
-c        call util_flush(LuOut)
-c      end if
 c     Check tolerances of the machine
+c     Not sure if this is needed.
       nrm_tol = dlamch('E') * TEN
       min_tol = SQRT(SQRT(dlamch('S')))
+c      min_tol = 1.0d-30
       max_tol = ONE / min_tol
       if (tol <= ZERO) tol = SQRT(dlamch('E'))
-c      if(ldebug) then
-c        if(id .eq. 0) write(LuOut,*) "Tol: ", tol
-c      end if
 c
 c     Zero work arrays
-      do i = 1, 6
+      do i = 1, 7
         call ga_zero(g_work(i))
       end do
 c
-c     Initalize by copying input field to work 2 and 3
+c     Initalize by placing input field into work 2 and 3
       call ga_copy(g_fld, g_work(2))
       call ga_sync()
       call ga_copy(g_work(2), g_work(3))
@@ -84,11 +77,11 @@ c     Initalize by copying input field to work 2 and 3
 c
 c     Initial residual
 c      res_0 = dnrm2(nlen,unknowns,1)
-      res_0 = SQRT(ga_ddot(g_work(3), g_work(3)))
-c
+      call ga_conjg(g_work(3), g_work(7))
+      res_0 = SQRT(REAL(ga_zdot(g_work(7), g_work(3)), KIND=8))
 c
 c     If already converged, exit here
-      if((tol >= ONE) .or. (res_0 <= tol)) then
+      if((tol >= ONE) .or. (res_0 <= tol )) then
         niter = 0
         tol = res_0
         return
@@ -97,12 +90,12 @@ c
 c     Initialize the variables
       maxiter   = niter
       scv       = res_0
-      e_n       = ONE
+      e_n       = ONE_C
       cosn      = ONE
       res_nrm   = ONE
       scpn      = ONE
-      scs       = ZERO
-      sinn      = ZERO
+      scs       = ZERO_C
+      sinn      = ZERO_C
       l_n_plus1 = ZERO
       omega     = ONE
       rhs_n     = omega * res_0
@@ -113,22 +106,23 @@ c     Begin the algorithm
         time = util_timer()
 c
 c       Check if E_n is nonsingular
-        if(e_n == ZERO) then
-          ierr = 4
+        if(ABS(e_n) == ZERO) then
+          ierr = 3
           return
         end if
 c
 c       Compute scale factor for the vector w_{n}
 c       Check for invariant subspaces, and scale the vectors if needed.
         ierr = 0
-        if (scpn * scv < nrm_tol) ierr = 5
-        if (ierr /= 0) return ! A-invarient subspace
-c        write(luout,*)'scv',scv
+        if (scpn * scv < nrm_tol) then
+          ierr = 5 ! A-invarient subspace
+          return
+        end if
 c
-        d_n = ga_ddot(g_work(3), g_work(3)) / (scv**2)
-c        call ga_print(g_work(3))
+        d_n = ga_zdot(g_work(3), g_work(3))
+        d_n = d_n / (scv**2)
         if((scv >= max_tol) .or. (scv <= min_tol)) then
-          dtmp = ONE / scv
+          dtmp = ONE_C / scv
           call ga_scale(g_work(3), dtmp)
           scv = ONE
         end if
@@ -137,28 +131,31 @@ c
 c       Build the vector p_n
         u_n_minus1 = d_n * l_n_plus1 / e_n
         dtmp       = u_n_minus1 * scpn / scv
-        call ga_add(ONE, g_work(3), -dtmp, g_work(4), g_work(4))
+        call ga_add(ONE_C, g_work(3), -dtmp, g_work(4), g_work(4))
         scpn = scv
 c
 c       Check if D_n is nonsingular
-        if(d_n == ZERO) then
+        if(ABS(d_n) == ZERO) then
           ierr = 4
           return
         end if
 c
 c       Multiply current residual by the matrix
         call matvec(rtdb, nlen, g_work(4), g_work(6), 
-     $               xyz, ldebug, g_dim_diag_real, nDIM, nDIMTypes)
+     $               xyz, ldebug, g_dim_diag_cplx, nDIM, nDIMTypes)
 c
 c       Compute p_n^T A p_n
-        e_n = ga_ddot(g_work(4), g_work(6)) * scpn**2
+        e_n = ga_zdot(g_work(4), g_work(6))
+        e_n = e_n * scpn**2
 c
 c       Build the vector v_{n+1}
         l_n = e_n / d_n
-        call ga_add(ONE, g_work(6), -l_n, g_work(3), g_work(3))
+        call ga_add(ONE_C, g_work(6), -l_n, g_work(3), g_work(3))
+        call ga_sync()
 c
 c       Compute the scale factor for v_{n+1}
-        scv = SQRT(ga_ddot(g_work(3), g_work(3)))
+        call ga_conjg(g_work(3), g_work(7))
+        scv = SQRT(REAL(ga_zdot(g_work(7), g_work(3)), KIND=8))
         l_n_plus1 = scpn * scv
 c       
 c       The QMR code starts here.
@@ -174,26 +171,26 @@ c       Apply the previous rotation
         res_n        = cosn * res_n
 c
 c       Compute and apply the rotation for the last element
-        call drotg(res_n, res_n_plus1, cosn, sinn)
+        call zrotg(res_n, res_n_plus1, cosn, sinn)
 c
 c       Apply the new rotation to the right-hand side vector
-        rhs_n_plus1 = -sinn * rhs_n
+        rhs_n_plus1 = -CONJG(sinn) * rhs_n
         rhs_n       =  cosn * rhs_n
 c
 c       Compute the next search direction s_i
         dtmp = res_n_minus1 * scs / scpn
 c       g_work(:,5) = g_work(:,4) + -dtmp * g_work(:,5)
-        call ga_add(ONE, g_work(4), -dtmp, g_work(5), g_work(5))
+        call ga_add(ONE_C, g_work(4), -dtmp, g_work(5), g_work(5))
 c
 c       Compute the new QMR iterate, then scale the search direction
         scs  = scpn / res_n
         dtmp = scs * rhs_n
 c       g_work(:,1) = g_work(:,1) + dtmp * g_work(:,5)
-        call ga_add(ONE, g_work(1), dtmp, g_work(5), g_work(1))
+        call ga_add(ONE_C, g_work(1), dtmp, g_work(5), g_work(1))
         if((ABS(scs) >= max_tol) .or. (ABS(scs) <= min_tol)) then
 c         g_work(:,5) = scs * g_work(:,5)
           call ga_scale(g_work(5), scs)
-          scs = ONE
+          scs = ONE_C
         end if
 c
 c       Compute the residual norm upper bound
@@ -201,32 +198,23 @@ c       If the scaled upper bound is within one order of magnitude of
 c       the targer convergence norm, compute the true residual norm.
         rhs_n = rhs_n_plus1
         res_nrm_upper_bound =
-     $    SQRT(REAL(niter+1))*omegamax*ABS(rhs_n_plus1)/res_0
+     $    SQRT(REAL(niter+1, KIND=8))*omegamax*ABS(rhs_n_plus1)/res_0
         nrm_check = res_nrm_upper_bound
-
-        !if(id.eq.0.and.ldebug) then
-        !  write(LuOut,*) "Res_nrm_upper_bound:", res_nrm_upper_bound
-        !  write(LuOut,*) "Res_nrm:", res_nrm
-        !end if
 
         if((res_nrm_upper_bound/tol <= TEN).or.(niter >= maxiter)) then
 c         Multiply the current residual by the matrix
            call matvec(rtdb, nlen, g_work(1), g_work(6), 
-     $                  xyz, ldebug, g_dim_diag_real, nDIM, nDIMTypes)
-c          g_work(:,6) = g_work(:,2) - g_work(:,6)
-           call ga_add(ONE, g_work(2), -ONE, g_work(6), g_work(6))
+     $                  xyz, ldebug, g_dim_diag_cplx, nDIM, nDIMTypes)
+           call ga_add(ONE_C, g_work(2), -ONE_C, g_work(6), g_work(6))
            call ga_sync()
-           res_nrm = SQRT(ga_ddot(g_work(6), g_work(6))) / res_0
+           call ga_conjg(g_work(6), g_work(7))
+           res_nrm = SQRT(REAL(ga_zdot(g_work(7), g_work(6)),KIND=8))
+           res_nrm = res_nrm / res_0
            call ga_sync()
            nrm_check = res_nrm
         endif
         time = util_timer() - time
-c        if(ldebug) then
-c          write(LuOut,*) "Iteration", niter
-c          write(LuOut,*) "Time (s):", time
-c          call util_flush(LuOut)
-c        end if
-c
+
 c       Check for convergece or termination.  Stop if:
 c         1. algorithm converged;
 c         2. there is an error condition;
@@ -248,9 +236,7 @@ c
 c     Put proper values into output variables
       if (niter > maxiter) ierr = 3
       tol = res_nrm
-c      call ga_get(g_work(1), 1, nLen, 1, 1, unknowns, 1)
+c      call ga_copy(g_work(1), g_unknowns)
       call ga_copy(g_work(1), g_fld)
-c      call ga_print(g_fld)
-c      if(id.eq.0.and.ldebug) write(LuOut,*)
-c     $   "End QMR Routine"
-      end subroutine qmr_real2
+      call ga_sync()
+      end subroutine qmr_complex2

@@ -34,6 +34,7 @@
          dim_grid_quadv0b.o \
          dimqm_fldpot2.o\
          qmr_real2.o \
+         qmr_complex2.o \
          dimqm_f2d2.o \
          dimqm_iterative2.o \
          dimqm_seeding.o \

@@ -28,6 +28,7 @@ c     Input Variables
       integer g_rhs
       logical ldbg
       double precision xyz(3,nDIM)
+      integer g_dim_diag_cplx
       integer nDIM,nDIMTypes
 c
 c     Local Variables
@@ -42,8 +43,8 @@ c     Local Variables
       double complex fld(3)
       logical stat
       integer lo, hi
+      integer nprocs
 c      integer g_DIM_diag
-      integer g_dim_diag_cplx
       integer nOrder
 c
 c     Common variables used from dimqm.fh
@@ -52,8 +53,9 @@ c     integer nDIM, nDIMTypes, nOrder, d_DIM_diag
 c
 c      Determine node ID
       id = ga_nodeid()
-      if(id.eq.0 .and. ldbg) write(LuOut,*)
-     $   "Start MatvecComplex routine"
+      nprocs = ga_nnodes()
+c      if(id.eq.0 .and. ldbg) write(LuOut,*)
+c     $   "Start MatvecComplex routine"
       time = util_timer()
       nOrder = 3*nDIM
 c
@@ -61,19 +63,20 @@ c      Initialize right hand side
       call ga_zero(g_rhs)
 c
 c      Determine chunk to be done on this node
-      call pphilo(id, nDIM, mLo, mUp, mOnNode)
+!      call pphilo(id, nDIM, mLo, mUp, mOnNode)
 c
 c      Fill arrays
       stat = rtdb_get(rtdb, 'dimqm:spol', mt_dbl, nDIMTypes, sPol)
       stat = rtdb_get(rtdb, 'dimqm:typeindex', mt_int, nDIM, tx)
+      call ga_init_fence()
       call ga_get(g_dim_diag_cplx, 1, nOrder, 1, 1, diagFD, 1)
       call ga_get(g_vec, 1, nOrder, 1, 1, vec, 1)
-      call ga_sync()
+      call ga_fence()
 
       call ga_init_fence()
 c
 c      Loop over atoms on this node
-      do m = mLo, mUp
+      do m = 1, nDIM 
         mtype = tx(m)
         fld = ZERO_C
         ms = 3 * (m - 1) + 1
@@ -91,14 +94,14 @@ c      Loop over atoms on this node
      $                                     vec(ns:ne),    ! vec
      $                                     ldbg)          ! debug
         end do
-        call ga_acc(g_rhs, ms, me, 1, 1, fld, 1, ONE_C)
+        call ga_acc(g_rhs, ms, me, 1, 1, fld, 1, ONE_C/nprocs)
       end do
       call ga_fence()
 c
 c      Clean up arrays
       time = util_timer() - time
-      if(id.eq.0.and.ldbg) write(LuOut,*)
-     $   "End MatvecComplex Routine"
+c      if(id.eq.0.and.ldbg) write(LuOut,*)
+c     $   "End MatvecComplex Routine"
 
       contains 
       function atomPairField(m, n, mxyz, nxyz, mpol, npol,

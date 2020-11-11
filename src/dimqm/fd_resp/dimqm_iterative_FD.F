@@ -1,4 +1,9 @@
       subroutine dimqm_iterative_FD(rtdb, g_fld, xyz, nDIM)
+c-------------------------------------------------------------------------
+c     Calls: qmr_complex2
+c     Called by: 
+c     Purpose: sets up and calls the qmr solver for FD response
+c-------------------------------------------------------------------------
       implicit none
 #include "errquit.fh"
 #include "inp.fh"
@@ -9,129 +14,84 @@
 #include "global.fh"
 #include "dimqm_constants.fh"
 #include "dimqm.fh"
-c
-c     Input variables
+c-------------------------- Input variables --------------------------------
       integer rtdb
       integer g_fld
       double precision xyz(3, nDIM)
       integer nDIM
-c      logical doefield
-c
-c     Common variables used
-c      logical lcpim, ldebug
-c      integer alg, nDIM, nOrder
-c      double precision totcharge
-c
-c     Local variables
-      integer i, i3, i0, id, iAtom, iOrder
-      double precision tempArr(3*nDIM, 2)
+c-------------------------- Local Variables --------------------------------
+      integer g_dimwork(7)
+      integer i, i3, i0, id, nDIMTypes, nIter, ierr
+      integer g_dim_diag_cmplx
+      external matvecComplex
+      double precision dimtol
       logical stat
       logical ldebug
 c
 c     Initallize
-c      write(luout,*) "i3: ", 3*nDIM
-c      write(luout,*) "nORDER: ", nOrder
-!      id = ga_nodeid()
-!      call dimqm_get_debug(rtdb, ldebug)
-!      if(id.eq.0.and.ldebug) write(LuOut,*)
-!     $   "Begin dimqm_f2d"
-!      i3 = 3 * nDIM
+      id = ga_nodeid()
+      call dimqm_get_debug(rtdb, ldebug)
+      i3 = 3 * nDIM
 !c
-!c     Assemble b array
-!      tempArr = ZERO
-!c     Turn 3XNXicmplx matrix into 3Nxicmplx vector
-!      do i = 1,2 
-!        do iAtom = 1, nDIM
-!          i0 = 3 * (iAtom - 1)
-!          tempArr(i0+1,i) = fld(1,iAtom,i)
-!          tempArr(i0+2,i) = fld(2,iAtom,i)
-!          tempArr(i0+3,i) = fld(3,iAtom,i)
-!        end do
-!      end do
-!
-!c
-!c     If local fields, include the external field.  Real only.
-!c jbecca: START. We are missing contributions to the dipoles from the 
-!c        external applied electric field. This needs to be done carefully
-!c        as to not accidentally pull in and add induced dipoles from the
-!c        external field repeatedly. adding an additional logical variable
-!c        to check for this.
-!c     NOTE: Since this has (.not. iscmplx), it will only work for static
-!c           cases. FD with efield will not and should not work. 
-!c      if(lefield .and. doefield .and. lclFld .and. .not. iscmplx) then
-!c         write(luout,*)'finitefieldX',finitefieldX
-!c         write(luout,*)'finitefieldY',finitefieldY
-!c         write(luout,*)'finitefieldZ',finitefieldZ
-!c         do i = 1, icmplx
-!c            do iAtom = 1, nDIM
-!c               i0 = 3 * (iAtom - 1)
-!cc          tempArr(i0+1:i0+3,1) = tempArr(i0+1:i0+3,1) ! + external field
-!c                  tempArr(i0+1,i) = tempArr(i0+1,i) + finiteFieldX
-!c                  tempArr(i0+2,i) = tempArr(i0+2,i) + finiteFieldY
-!c                  tempArr(i0+3,i) = tempArr(i0+3,i) + finiteFieldZ
-!c            enddo
-!c         end do
-!c      end if
-!c
-!c  ---------------------------------------------------------------
-!c  If the equations are complex, turn tempArr into a complex array
-!c  so that we can pass the data to the complex solvers.
-!c  ---------------------------------------------------------------
-!c
-!c      if(iscmplx) then
-!c        if(.not.ma_push_get(mt_dcpl, nOrder,'dimqm:cmplxArr',
-!c     $                      l_cmplxArr, k_cmplxArr))
-!c     $  call errquit('dimqm_f2d malloc k_cmplxArr failed', 1, MA_ERR)
-!c        do iOrder = 1, nOrder
-!c          dcpl_mb(k_cmplxArr+iOrder-1) = DCMPLX(tempArr(iOrder,1),
-!c     $                                    tempArr(iOrder,2))
-!c        end do
-!c      end if
-!c
-!c  ---------------------------------------------------------------------------
-!c  Solve equation a*x=b. Before calling, tempArr is b. After, tempArr is x.
-!c  Use either a UDU decomposed matrix to solve directly or solve iteratively.
-!c  ---------------------------------------------------------------------------
-!c
-!c      if(alg == 0) then
-!c       Exact Solver.  Might be done another time.
-!c      else
-!c       Iterative solver!
-!        call dimqm_iterative(rtdb, tempArr(:,:), muold, xyz, 2,
-!     $                       .true., dir, nDIM)
-!c      end if
-!c      write(luout,*) "Dipoles: "
-!c      write(luout,*) tempArr
-!c
-!c  ------------------------------------------------------
-!c  Collect dipoles from x vector.
-!c  Neglect a contribution if explicitly not including it.
-!c  ------------------------------------------------------
-!c
-!      call dfill(i3*2, ZERO, muind, 1)
-!c
-!c     Turn from a [3N x icmplx] vector back to a [3 x N xicmplx] matrix
-!       do i = 1,2 
-!         do iAtom = 1, nDIM
-!c            write(luout,*) iAtom
-!            i0 = 3 * ( iAtom - 1 )
-!c            write(luout,*) i0
-!            muind(1,iAtom, i) = tempArr(i0+1,i)
-!c            muind(1,iAtom) = ONE
-!c            write(luout,*) muind(1,iAtom)
-!c            stat = MA_verify_allocator_stuff()
-!            muind(2,iAtom,i) = tempArr(i0+2,i)
-!c            write(luout,*) muind(2,iAtom)
-!c            stat = MA_verify_allocator_stuff()
-!            muind(3,iAtom,i) = tempArr(i0+3,i)
-!c            write(luout,*) muind(3,iAtom)
-!c            stat = MA_verify_allocator_stuff()
-!         end do
-!       end do
-!c      end if
-!
-!      
-!
-!      if(id.eq.0.and.ldebug) write(LuOut,*)
-!     $   "End dimqm_f2d"
+      if(.not.rtdb_get(rtdb,'dimqm:ndimtypes',mt_int,1,nDIMTypes))
+     $  call errquit('dim_iter2_fd: get nDIMTypes failed',1,RTDB_ERR)
+
+      if(.not.ga_create(mt_dcpl,i3,1,'g_dimwork1',0,0,g_dimwork(1)))
+     $ call errquit('g_dimwork1: create failed',0,GA_ERR)
+      if(.not.ga_create(mt_dcpl,i3,1,'g_dimwork2',0,0,g_dimwork(2)))
+     $ call errquit('g_dimwork2: create failed',0,GA_ERR)
+      if(.not.ga_create(mt_dcpl,i3,1,'g_dimwork3',0,0,g_dimwork(3)))
+     $ call errquit('g_dimwork3: create failed',0,GA_ERR)
+      if(.not.ga_create(mt_dcpl,i3,1,'g_dimwork4',0,0,g_dimwork(4)))
+     $ call errquit('g_dimwork4: create failed',0,GA_ERR)
+      if(.not.ga_create(mt_dcpl,i3,1,'g_dimwork5',0,0,g_dimwork(5)))
+     $ call errquit('g_dimwork5: create failed',0,GA_ERR)
+      if(.not.ga_create(mt_dcpl,i3,1,'g_dimwork6',0,0,g_dimwork(6)))
+     $ call errquit('g_dimwork6: create failed',0,GA_ERR)
+      if(.not.ga_create(mt_dcpl,i3,1,'g_dimwork7',0,0,g_dimwork(7)))
+     $ call errquit('g_dimwork7: create failed',0,GA_ERR)
+
+      nIter = MAX(i3, 1000)
+
+      call dimqm_prep_cplx(rtdb,g_dim_diag_cmplx, nDIM, nDIMTypes)
+      call dimqm_setlfirst(rtdb,.true.)
+      if(.not.rtdb_get(rtdb,'dimqm:dimtol',mt_dbl,1,dimtol))
+     $ call errquit('dimqm_iter_FD: get dimtol failed',1,RTDB_ERR)
+      call qmr_complex2(rtdb,
+     $                  i3,
+     $                  g_dimwork,
+     $                  nIter,
+     $                  dimtol,
+     $                  ierr,
+     $                  g_fld,
+     $                  matvecComplex,
+     $                  xyz,
+     $                  ldebug,
+     $                  g_dim_diag_cmplx,
+     $                  nDIM,
+     $                  nDIMTypes)
+
+      select case (ierr)
+      case (0)
+         if (id.eq.0.and.ldebug) then
+            write(luout,*)'DIM/QM dipoles converged in ',nIter,'iters'
+         endif
+      case(2)
+         call errquit('error in arguments for QMR cmplx',ierr,GA_ERR)
+      case(3)
+         call errquit('Iter solver did not converge',ierr,GA_ERR)
+      case(4)
+         call errquit('Nonsingular system in solver',0,GA_ERR)
+      case(5)
+         call errquit('A-invariant subspace in solver',0,GA_ERR)
+      end select
+      stat = .true.
+      do i = 1, 7
+            stat = stat.and.ga_destroy(g_dimwork(i))
+      enddo
+      if (.not.stat) 
+     $ call errquit('dim_iter_FD:destroy gdimwork failed',0,GA_ERR)
+      if (.not.ga_destroy(g_dim_diag_cmplx))
+     $ call errquit('dim_iter_FD:destroy dim diag failed',0,GA_ERR)
+
       end subroutine dimqm_iterative_FD

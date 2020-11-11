@@ -484,7 +484,7 @@ c
       expdies = ZERO_C
       expdiesRead = .false.
       id = ga_nodeid()
-      if(id.eq.0 .and. ldebug) write(luout,*) "Start dimqm_prep_cplx"
+c      if(id.eq.0 .and. ldebug) write(luout,*) "Start dimqm_prep_cplx"
 c      call pphilo(id, nDIM, mLo, mUp, mOnNode)
 c
 c   Pull needed info from RTDB
@@ -512,11 +512,11 @@ c        Complex diag allocation
      $                       nOrder, -1, g_DIM_diag_cplx))
      $    call errquit('dimqm:alphainvFD: create failed',9,GA_ERR)
 
-      if (ldebug.and.id.eq.0) write(luout,*) 'diagFD arrays allocated'
+c      if (ldebug.and.id.eq.0) write(luout,*) 'diagFD arrays allocated'
 c
 c        Zero the diagonal
       call ga_zero(g_DIM_diag_cplx)
-      if (ldebug.and.id.eq.0) write(luout,*) 'diagFD arrays zerod'
+c      if (ldebug.and.id.eq.0) write(luout,*) 'diagFD arrays zerod'
 c
 c   =========================================================================
 c   Build the interaction matrix (only the diagonal for the iterative solver) 
@@ -525,7 +525,7 @@ c
 c      Iterative solver
 c      if(alg > 0) then
         call ga_init_fence()
-        if (ldebug.and.id.eq.0) write(luout,*) 'ga_init_fence called'
+c        if (ldebug.and.id.eq.0) write(luout,*) 'ga_init_fence called'
 c          Loop over DIM atoms
 c          do m = mLo, mUp
           do m = 1, nDIM
@@ -559,6 +559,6 @@ c      dimqm_on = .true.
 
       call dimqm_setlfirst(rtdb, lfirst)
 
-      if (ldebug.and.id.eq.0) write(luout,*)'exiting dimqm_prep_cplx'
+      !if (ldebug.and.id.eq.0) write(luout,*)'exiting dimqm_prep_cplx'
       end subroutine dimqm_prep_cplx
 
