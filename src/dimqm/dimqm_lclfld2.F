@@ -39,6 +39,7 @@ c------------------------- Local Variables ----------------------------
       integer alo(3), ahi(3)
       integer blo(2), bhi(2)
       integer clo(3), chi(3)
+      logical stat
       
       id = ga_nodeid()
       i3 = 3*DIM_nAtoms
@@ -135,4 +136,14 @@ c --------- Allocate arrays and populate ---------
      $                         ONE, g_dim_i,   alo, ahi,
      $                              g_dipel_i, clo, chi)
       enddo
+
+      stat = .true.
+      stat = stat.and.ga_destroy(g_mu_r)
+      stat = stat.and.ga_destroy(g_mu_i)
+      stat = stat.and.ga_destroy(g_dim_r)
+      stat = stat.and.ga_destroy(g_dim_i)
+      stat = stat.and.ga_destroy(g_fld)
+      stat = stat.and.ga_destroy(g_fld_tot)
+      stat = stat.and.ma_chop_stack(l_dimxyz)
+
       end subroutine dimqm_lclfld2

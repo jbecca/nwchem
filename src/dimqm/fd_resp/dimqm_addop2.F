@@ -633,6 +633,17 @@ c   =======
       call dimqm_setlfirst(rtdb, lfirst)
       stat = .true.
       stat = stat.and.ma_chop_stack(l_dimxyz)
+      stat = stat.and.ga_destroy(g_fld1)
+      stat = stat.and.ga_destroy(g_fld2)
+      stat = stat.and.ga_destroy(g_fldcmplx)
+      stat = stat.and.ga_destroy(g_fld_tot)
+      stat = stat.and.ga_destroy(g_mu_r(1))
+      stat = stat.and.ga_destroy(g_mu_r(2))
+      stat = stat.and.ga_destroy(g_mu_i(1))
+      stat = stat.and.ga_destroy(g_mu_i(2))
+      if (.not. stat) 
+     $    call errquit('dimqm_addop2 cleanup failed',0,GA_ERR)
+
       do ipm = 1,2
         if (.not. ga_destroy(g_pmats(ipm))) call errquit
      $     ('addop: pmats GA?', 0, GA_ERR)
