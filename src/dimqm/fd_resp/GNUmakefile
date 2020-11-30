@@ -7,7 +7,8 @@
          dim_tabcd_FD.o\
          dim_eval_fnl_FD.o\
          scat_mat_cmplx.o\
-         dimqm_EqmE_FD.o
+         dimqm_EqmE_FD.o\
+         dimqm_addop2.o
 
    LIBRARY = libdimqm.a
 

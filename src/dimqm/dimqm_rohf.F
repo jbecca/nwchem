@@ -58,6 +58,7 @@ c created, segfaults happen. TODO: find better way for this to work
       Edim = 0.0d0
       call dim_grid_quadv0(rtdb, g_dim)
 
+      call dimqm_setlfirst(rtdb, .true.)
       write(luout,*)'Ending dimqm_rohf_wrap'
       end subroutine dimqm_rohf_wrap
 

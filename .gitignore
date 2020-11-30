@@ -152,3 +152,15 @@ dimqm_fd_pol.cfock
 dimqm_fd_pol.db
 dimqm_fd_pol.gridpts.0
 dimqm_fd_pol.movecs
+dimqm_fd_pol.nw
+dimqm_fd_pol.gridpts.7
+dimqm_fd_pol.gridpts.6
+dimqm_fd_pol.gridpts.5
+dimqm_fd_pol.gridpts.4
+dimqm_fd_pol.gridpts.3
+dimqm_fd_pol.gridpts.2
+dimqm_fd_pol.gridpts.1
+dimqm_fd_pol.cphf_rhs_im_2
+dimqm_fd_pol.cphf_rhs_im
+dimqm_fd_pol.cphf_rhs_2
+dimqm_fd_pol.cphf_rhs
