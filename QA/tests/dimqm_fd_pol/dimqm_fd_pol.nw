@@ -26,6 +26,7 @@ end
 
 dimqm
  debug
+ localfield
  PIM
  Algorithm 1
  screen GAU 1.0d0

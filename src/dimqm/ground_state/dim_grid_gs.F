@@ -657,7 +657,7 @@ c
 c
       endif
 c         write(luout,*) "g_dim AFTER dim_tabcd"
-c         call ga_print(g_vxc)
+c         call ga_print(g_vdim)
 c
 c      endif
 

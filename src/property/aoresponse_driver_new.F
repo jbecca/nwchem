@@ -777,13 +777,17 @@ c        call dimqm_prep(rtdb, omega)
 
       if (ldimqm .and. lclfld) then
 c     call in with .false., use g_dipel, create g_dipel_i in routine
-        if (debug) write(luout,*) 'aor_driver: calling dimqm_lclfld'
-        call dimqm_lclfld(rtdb,g_dipel, omega, lifetime, g_dipel_i)
-        if (debug) write(luout,*) 'aor_driver: back from dimqm_lclfld'
-c        if ((omega .le. 1d-8).or.(.not.lifetime))
-c     &       call ga_zero(g_dipel_i)
-c        call dimqm_tidy()
-      
+        alo(1) = nbf
+        alo(2) = -1
+        alo(3) = -1
+        ahi(1) = nbf
+        ahi(2) = nbf
+        ahi(3) = ndir
+        if(.not.nga_create(mt_dbl,3,ahi,'e-dipole-i',
+     $        alo, g_dipel_i)) call errquit(
+     $    'aor_driver: nga_create g_dipel_i failed',0,GA_ERR)
+        call ga_zero(g_dipel_i)
+        call dimqm_lclfld2(rtdb,g_dipel,g_dipel_i, omega, lifetime)
       end if
 
 c     ------------------------------------------------

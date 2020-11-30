@@ -1050,7 +1050,19 @@ c ---- Copy g_z --> g_x_reim ------ END
      &    write(*,*) '--------g_dens(',ipm,')-------END'
         enddo ! end-loop-ipm
       endif ! end-if-debug
+c if dimqm is added here, avoids calling shellfockbuild for dimqm
+      if (.not.rtdb_get(bgj_get_rtdb_handle(), 'dimqm:lrsp', MT_LOG,
+     $                  1, ldimqm)) ldimqm = .false.
 
+      if (ldimqm) then
+            call dimqm_FD_cycle(
+     &            bgj_get_rtdb_handle(),
+     &            geom,
+     &            basis,
+     &            nbf,
+     &            ncomp,
+     &            g_dens)
+      endif
       call shell_fock_build2(g_fock,   ! out: Fock    matrices
      &                       g_dens,   ! in : density matrices
      &                       geom,     ! in : geom  handle
@@ -1087,22 +1099,6 @@ c ---- Copy g_z --> g_x_reim ------ END
 
 !     ! Add DIM/QM code here. Calculate image dipoles, construct perturbation, add to fock matrix. 
 !
-      if (.not.rtdb_get(bgj_get_rtdb_handle(), 'dimqm:lrsp', MT_LOG,
-     $                  1, ldimqm)) ldimqm = .false.
-
-      if (ldimqm) then
-            call dimqm_getnDIM(bgj_get_rtdb_handle(), nDIM)
-            call dimqm_FD_cycle(
-     &            bgj_get_rtdb_handle(),
-     &            geom,
-     &            basis,
-     &            g_fock,
-     &            ncomp,
-     &            limag,
-     &            lifetime,
-     &            nDIM,
-     &            g_dens)
-      endif
 c ------- Remove GA arrays:
       do ipm = 1,ncomp
        if (.not.ga_destroy(g_pmats(ipm))) call errquit(

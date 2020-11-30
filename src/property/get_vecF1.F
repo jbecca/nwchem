@@ -221,9 +221,14 @@ c jbecca START DIMQM
       endif
 
       if (ldimqm .and. lrsp .and. lclfld .and. lifetime) then
+       ahi(3) = ndir
        if (.not.nga_create(MT_DBL,3,ahi,'dip matrix',alo,g_dipel_i_tmp)) 
+     $ call errquit('fiao_f1: nga_create failed g_dipole_tmp',0,GA_ERR)
+       ahi(3) = ndir*npol
+       if (.not.nga_create(MT_DBL,3,ahi,'dip matrix',alo,g_dipel_i)) 
      $ call errquit('fiao_f1: nga_create failed g_dipole',0,GA_ERR)
        call ga_zero(g_dipel_i_tmp)
+       call ga_zero(g_dipel_i)
       endif
 
 c jbecca END DIMQM
@@ -253,7 +258,7 @@ c        parameter if using a frequency dependent local field
 
       if (ldimqm .and. lrsp .and. lclfld) then 
          !write(luout,*)'calling dimqm_lclfld for resp.eq.'
-         call dimqm_lclfld(rtdb,g_dipole1,omega,lifetime,g_dipel_i)
+         call dimqm_lclfld2(rtdb,g_dipole1,g_dipel_i_tmp,omega,lifetime)
       endif
 
 c jbecca END   ------------- DIM/QM -----------------
@@ -282,8 +287,8 @@ c --------- g_dipole1 --> g_dipole --------- START
      &                         g_dipole ,alo,ahi) 
 c  jbecca START: DIM/QM
        if (ldimqm .and. lrsp .and. lclfld .and. lifetime) then
-         call nga_copy_patch('n',g_dipel_i,blo,bhi,
-     &                         g_dipel_i_tmp ,alo,ahi) 
+         call nga_copy_patch('n',g_dipel_i_tmp,blo,bhi,
+     &                         g_dipel_i ,alo,ahi) 
        endif
 c  jbecca END
       enddo ! end-loop-ispin
@@ -291,7 +296,7 @@ c --------- g_dipole1 --> g_dipole --------- END
       call giao_aotomo(g_dipole,vectors,nocc,nvirt,npol,ndir,nbf)
 c jbecca START: DIM/QM
       if (ldimqm .and. lrsp .and. lclfld .and. lifetime) then
-        call giao_aotomo(g_dipel_i_tmp,vectors,nocc,nvirt,npol,ndir,nbf)
+        call giao_aotomo(g_dipel_i,vectors,nocc,nvirt,npol,ndir,nbf)
       endif
 c jbecca END: DIM/QM
       
@@ -324,7 +329,7 @@ c jbecca END: DIM/QM
 c  jbecca START DIM/QM
         if (ldimqm .and. lrsp .and. lclfld .and. lifetime) then
             call nga_add_patch(1.0d0,g_rhs_im(ipm),blo,bhi,
-     &                         1.0d0,g_dipel_i_tmp  ,alo,ahi,
+     &                         1.0d0,g_dipel_i  ,alo,ahi,
      &                           g_rhs_im(ipm),blo,bhi)
         endif
 c  jbecca END DIM/QM

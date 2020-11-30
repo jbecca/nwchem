@@ -1,6 +1,13 @@
    OBJ = dimqm_FD_cycle.o\
          dimqm_iterative_FD.o\
-         dimqm_pol_FD.o
+         dimqm_pol_FD.o\
+         dim_grid_FD.o\
+         dim_grid_FDa.o\
+         dim_grid_FDb.o\
+         dim_tabcd_FD.o\
+         dim_eval_fnl_FD.o\
+         scat_mat_cmplx.o\
+         dimqm_EqmE_FD.o
 
    LIBRARY = libdimqm.a
 
