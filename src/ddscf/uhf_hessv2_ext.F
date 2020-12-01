@@ -3638,8 +3638,22 @@ c         write(luout,*)'done with allocation for',ipm
 
 c         write(luout,*)'real and imag g_ax arrays made'
 
-         call dimqm_addop_uhf_damp(g_ax_re, g_ax_im, ncomp, limag,
-     $         lifetime, g_dens_tot, g_dens_tot_i)
+         call dimqm_addop_uhf_damp(
+     $                     bgj_get_rtdb_handle(),
+     $                     geom,
+     $                     basis,
+     $                     nbf,
+     $                     nmo,
+     $                     nclosed,
+     $                     nopen,
+     $                     g_movecs,
+     $                     g_ax_re,
+     $                     g_ax_im,
+     $                     ncomp,
+     $                     limag,
+     $                     lifetime,
+     $                     g_dens_tot,
+     $                     g_dens_tot_i)
 
          do ipm   =  1, ncomp
             call conv2complex4_u1(

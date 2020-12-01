@@ -15,6 +15,12 @@ c     response Fock matricies (real and imaginary).  Requires knowledge
 c     of both the real and imaginary vectors simultaneously which is
 c     why this has to be located here, unlike the static routine.
 c
+c    It seems that a speed up opportunity is present by passing in the 
+c    perturbed density that is calculated in some previous routines.
+c    If this can be done, can avoid a large part of the start of this 
+c    routine that gets the symmetric and antisymmetric real and imaginary
+c    perturbed densities
+c
       implicit none
 #include "errquit.fh"
 #include "stdio.fh"
@@ -257,9 +263,11 @@ c               block to build the density marix.
 c           write(luout,*) "pmata"
 c           call ga_print(g_pmata(1))
 c           call ga_print(g_pmata(2))
-
+c zeroing the antisymmetric dens mats is done in get_dens_reorim to force uncoupled CPKS. 
+c Not sure if this should be forced for DIM/QM density or not. 
           call ga_zero(g_pmata(1))
           call ga_zero(g_pmata(2))
+c looks like g_pmata is not used, so w/e
           call ga_sync()
           call ga_scale(g_pmats(1),0.25d0)
           call ga_scale(g_pmats(2),0.25d0)
@@ -400,7 +408,7 @@ c
 c       Imaginary portion of E-Field
           call dimqm_EqmE_FD(
      $                        rtdb, 
-     $                        g_dens_comp_r, 
+     $                        g_dens_comp_i, 
      $                        geom, 
      $                        basis,
      $                        dbl_mb(k_dimxyz),

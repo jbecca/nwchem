@@ -164,3 +164,10 @@ dimqm_fd_pol.cphf_rhs_im_2
 dimqm_fd_pol.cphf_rhs_im
 dimqm_fd_pol.cphf_rhs_2
 dimqm_fd_pol.cphf_rhs
+dimqm_fd_pol_uhf.cphf_rhs
+dimqm_fd_pol_uhf.cphf_rhs_2
+dimqm_fd_pol_uhf.cphf_rhs_im
+dimqm_fd_pol_uhf.cphf_rhs_im_2
+dimqm_fd_pol_uhf.db
+dimqm_fd_pol_uhf.gridpts.0
+dimqm_fd_pol_uhf.movecs

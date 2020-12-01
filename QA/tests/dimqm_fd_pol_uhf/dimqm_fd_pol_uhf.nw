@@ -26,6 +26,8 @@ dft
 end
 
 dimqm
+ debug
+ localfield
  PIM
  Algorithm 1
  screen GAU 1.0d0
@@ -101,8 +103,7 @@ END
 
 property
  aoresponse 1 0.14
+ damping 0.037
 end
-set dbg:xterm /usr/bin/xterm
-set dbg:gdb /opt/intel/compilers_and_libraries_2017.0.064/linux/bin/intel64/gdb-ia
 task dft property  #debug
 
