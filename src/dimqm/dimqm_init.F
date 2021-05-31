@@ -22,6 +22,8 @@ c      integer nDim
      $       rtdb_get(rtdb,'dimqm:ldebug',mt_log,1,DIM_ldebug)
       stat = stat .and. 
      $       rtdb_get(rtdb,'dimqm:ndim',mt_int,1,DIM_nAtoms)
+      stat = stat .and. 
+     $       rtdb_get(rtdb,'dimqm:ndimtypes',mt_int,1,DIM_nTypes)
       if (.not.stat)
      $      call errquit('DIMQM init rtdb_get 1 failed',1,RTDB_ERR)
 

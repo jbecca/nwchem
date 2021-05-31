@@ -3,8 +3,9 @@
 
       integer DIM_nOrder    ! Order of the interaction matrix
       integer DIM_nAtoms    ! Number of DIM atoms
+      integer DIM_nTypes    ! Number of DIM atoms
       integer g_DIMxyz
       integer g_DIMmuind
       integer g_DIMmuold
-      common /dimqmInt/ DIM_nOrder, DIM_nAtoms, g_DIMxyz, 
+      common /dimqmInt/ DIM_nOrder, DIM_nAtoms, DIM_nTypes, g_DIMxyz, 
      $                  g_DIMmuind, g_DIMmuold

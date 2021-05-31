@@ -31,9 +31,11 @@ c------------------------ Local Variables ------------------------------
 C      integer l_muold, k_muold
       double precision muold(DIM_nOrder)
       integer l_muind, k_muind
-      double precision edimqm, dimqm_energy2
+      double precision edimqm, dimqm_energy2, edimqmN, edimqmE
       double precision dimtol
       double precision maxdiperr
+      character*50 d
+      character*50 dd
 c----------- GA's -----------
       integer g_eqme, g_eqmn, g_etot
 c----------------------------
@@ -100,8 +102,10 @@ c  ---------------------------------------------------------------------
       call dimqm_iterative2(rtdb, g_DIMmuind, 
      $                        dbl_mb(k_dimxyz), DIM_nAtoms)
 ccc Calculate interaction energy and put it in rtdb
-      edimqm = -0.5d0 * ga_ddot(g_DIMmuind, g_eqmn)
-      edimqm = edimqm + (-0.5d0 * ga_ddot(g_DIMmuind, g_eqme))
+      edimqmN = -0.5d0 * ga_ddot(g_DIMmuind, g_eqmn)
+      edimqmE = -0.5d0 * ga_ddot(g_DIMmuind, g_eqme)
+      edimqm = edimqmN + edimqmE
+
       if(.not.rtdb_put(rtdb, 'dimqm:edimqm',mt_dbl,1,edimqm))
      $   call errquit('main2: edimqm put failed',1,RTDB_ERR)
 c  TODO: store ind. dip. in rtdb for now, so they can be accessed
@@ -157,20 +161,40 @@ cc      enddo
       if (.not.stat) 
      $   call errquit('dimqm_gs:free stack failed',1,MA_ERR)
 
+
+      dd =
+     $ '=================================================='
+      d =
+     $ '--------------------------------------------------'
       if(lastcy) then
          if(id.eq.0) then
 c  TODO
             write(luout,*)
      $'---------------------------- DIM/QM RESULTS -------------------'
             write(luout,*)''
-            write(luout,*)''
-            write(luout,*)
-     $'-------------------------- DIM/QM Energy -----------------------'
-            write(luout,*)'Total:   ', edimqm
-            write(luout,*)'it seems the job finished, do this later'
+
+            write(LuOut,*) 'DIM/QM Energy'
+            write(LuOut,*) d
+            write(LuOut,111) edimqmE
+            write(LuOut,222) edimqmN
+c      write(LuOut,444) efld_int
+            write(LuOut,333) edimqm
          endif
+
+         call dimqm_printAtoms(rtdb, dbl_mb(k_dimxyz),
+     $                           DIM_nAtoms,DIM_nTypes)
+
+        call dimqm_printDipole(rtdb, g_DIMmuind, 1, .true., DIM_nAtoms)
          call dimqm_destroy(rtdb)
       endif
+
+ 111  format(' Polarization (Dipole, el.) = ',f20.10)
+ 222  format(' Polarization (Dipole, nuc) = ',f20.10)
+ 333  format('              Total Energy  = ',f20.10)
+ 444  format(' Interaction with Efield    = ',f20.10)
+ 555  format('                      Total = ',f20.10)
+
+
       end subroutine dimqm_gs
 
       subroutine dimqm_dip_err(new, old, maxerr)
