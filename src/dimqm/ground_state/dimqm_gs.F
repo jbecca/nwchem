@@ -31,7 +31,7 @@ c------------------------ Local Variables ------------------------------
 C      integer l_muold, k_muold
       double precision muold(DIM_nOrder)
       integer l_muind, k_muind
-      double precision edimqm, dimqm_energy2, edimqmN, edimqmE
+      double precision edimqm, edimqmN, edimqmE
       double precision dimtol
       double precision maxdiperr
       double precision finiteFieldX, finiteFieldY, finiteFieldZ
@@ -104,7 +104,7 @@ c reuse k_eqme here for filling efield values
         call dfill(DIM_nAtoms, finiteFieldZ, dbl_mb(k_eqme+2), 3) 
         call ga_put(g_efield,1,3*DIM_nAtoms,1,1,dbl_mb(k_eqme), 1)
 c    Add efield into g_eqme so it is included in the fields used to solve for DIM dipoles
-        call ga_add(1.0d0, g_eqme, 1.0d0, g_efield, g_eqme)
+        call ga_add(1.0d0, g_DIMmuind, 1.0d0, g_efield, g_DIMmuind)
         if(.not.ga_destroy(g_efield)) 
      $      call errquit('ga destroy g_efield failed',1,GA_ERR)
       endif
@@ -188,16 +188,7 @@ c  TODO
             write(luout,*)
      $'---------------------------- DIM/QM RESULTS -------------------'
             write(luout,*)''
-
-            write(LuOut,*) dd
-            write(LuOut,*) 'DIM/QM Energy'
-            write(LuOut,*) d
-            write(LuOut,111) edimqmE
-            write(LuOut,222) edimqmN
-c      write(LuOut,444) efld_int
-            write(LuOut,333) edimqm
-            write(LuOut,*) dd
-            write(LuOut,*)''
+            call dimqm_energy2(rtdb, g_DIMmuind, g_eqme, g_eqmn)
             call dimqm_printAtoms(rtdb, dbl_mb(k_dimxyz),
      $                           DIM_nAtoms,DIM_nTypes)
             call dimqm_printDipole(rtdb,dbl_mb(k_muind),
@@ -244,34 +235,6 @@ c------------------------------ Input variables ------------------------
       maxerr = MAXVAL(ABS(old - new))
       write(luout,*)'max dip error: ', maxerr
       end subroutine dimqm_dip_err
-
-      function dimqm_energy2(muind, eqme, eqmn, DIM_nAtoms)
-c-----------------------------------------------------------------------
-c  Author: Jeff Becca
-c  Calls: Nothing
-c  Called from: dimqm_gs
-c  Purpose: Calculate DIM/QM interaction energy
-c-----------------------------------------------------------------------
-      implicit none
-c-------------------------- Input variables ----------------------------
-      double precision muind(3*DIM_nAtoms)
-      double precision  eqme(3*DIM_nAtoms)
-      double precision  eqmn(3*DIM_nAtoms)
-      double precision dimqm_energy2, tmp1, tmp2
-      integer DIM_nAtoms, i
-
-c      tmp1 = -0.5d0 * SUM(muind * eqme)
-c      tmp2 = -0.5d0 * SUM(muind * eqmn)
-c      dimqm_energy2 = tmp1 + tmp2
-      tmp1 = 0.0d0
-      tmp2 = 0.0d0
-      do i = 1, 3*DIM_nAtoms
-         tmp1 = tmp1 + (muind(i)*eqme(i))
-         tmp2 = tmp2 + (muind(i)*eqmn(i))
-      enddo
-      dimqm_energy2 = -0.5d0*(tmp1 + tmp2)
-      return
-      end function dimqm_energy2
 
       function calcErr(n, old, new)
       implicit none

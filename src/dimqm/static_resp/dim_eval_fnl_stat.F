@@ -81,7 +81,5 @@ c       Combine with quadrature weights
           ptnl(jj,idir) = -ptnl(jj,idir)*qwght(jj)
         enddo
       end do ! End loop over perturbations
-      if (DIM_ldebug.and.(id.eq.0)) 
-     $ write(luout,*)'leaving dim_eval_fnl_stat'
       return
       end subroutine dim_eval_fnl_stat

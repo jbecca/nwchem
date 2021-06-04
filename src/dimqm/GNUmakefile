@@ -50,6 +50,7 @@
          qmr_seed_real.o\
          seeded_qmr_complex.o\
          seeded_qmr_real_augment.o\
+         dimqm_energy2.o\
          seeded_qmr_real.o\
          dimqm_lclfld2.o
 
