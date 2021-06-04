@@ -34,16 +34,19 @@ C      integer l_muold, k_muold
       double precision edimqm, dimqm_energy2, edimqmN, edimqmE
       double precision dimtol
       double precision maxdiperr
+      double precision finiteFieldX, finiteFieldY, finiteFieldZ
+      logical lefield
       character*50 d
       character*50 dd
 c----------- GA's -----------
-      integer g_eqme, g_eqmn, g_etot
+      integer g_eqme, g_eqmn, g_etot, g_efield
 c----------------------------
 c| Initialize some settings |
 c----------------------------
       id = ga_nodeid()
       stat = rtdb_parallel(.true.)
       call dimqm_getlfirst(rtdb, lfirst)
+      call dimqm_getlefield(rtdb, lefield)
 
       if (lfirst) call ga_zero(g_DIMmuold)
 c ----------------- Initialize GA's used in DIM cycle ------------------
@@ -83,6 +86,28 @@ c  put last cycles dipoles into g_DIMmuold and zero g_DIMmuind for this cycle
 c  Combine field sources, store in g_DIMmuind
       !call ga_add(1.0d0, g_eqme, 1.0d0, g_eqmn, g_etot)
       call ga_add(1.0d0, g_eqme, 1.0d0, g_eqmn, g_DIMmuind)
+
+c  Add in finite field if present
+      if(lefield) then
+        if(.not.ga_create(mt_dbl,DIM_nOrder,1,'g_efield',0,0,g_efield))
+     $   call errquit('dimqm_gs: create g_efield failed',0,GA_ERR)
+        if(.not.rtdb_get(rtdb,'dimqm:finiteFieldX',mt_dbl,
+     $    1,finiteFieldX)) call errquit('get fieldx failed',1,RTDB_ERR)
+        if(.not.rtdb_get(rtdb,'dimqm:finiteFieldY',mt_dbl,
+     $    1,finiteFieldY)) call errquit('get fieldy failed',1,RTDB_ERR)
+        if(.not.rtdb_get(rtdb,'dimqm:finiteFieldZ',mt_dbl,
+     $    1,finiteFieldZ)) call errquit('get fieldz failed',1,RTDB_ERR)
+
+c reuse k_eqme here for filling efield values
+        call dfill(DIM_nAtoms, finiteFieldX, dbl_mb(k_eqme), 3) 
+        call dfill(DIM_nAtoms, finiteFieldY, dbl_mb(k_eqme+1), 3) 
+        call dfill(DIM_nAtoms, finiteFieldZ, dbl_mb(k_eqme+2), 3) 
+        call ga_put(g_efield,1,3*DIM_nAtoms,1,1,dbl_mb(k_eqme), 1)
+c    Add efield into g_eqme so it is included in the fields used to solve for DIM dipoles
+        call ga_add(1.0d0, g_eqme, 1.0d0, g_efield, g_eqme)
+        if(.not.ga_destroy(g_efield)) 
+     $      call errquit('ga destroy g_efield failed',1,GA_ERR)
+      endif
 c  ------------------------- Things we need from calc ------------------
 c     Name           reason
 c     ----           ------   
@@ -151,15 +176,6 @@ cc      do i = 1, nDIM
 cc         dbl_mb(k_muold+(i-1)) = dbl_mb(k_muind+(i-1))
 cc      enddo
       call dimqm_setlfirst(rtdb,.false.)
-      stat = .true.
-      stat = stat.and.ma_free_heap(l_eqme)
-      stat = stat.and.ma_free_heap(l_muind)
-      stat = stat.and.ma_chop_stack(l_dimxyz)
-      stat = stat.and.ga_destroy(g_eqme)
-      stat = stat.and.ga_destroy(g_eqmn)
-      stat = stat.and.ga_destroy(g_etot)
-      if (.not.stat) 
-     $   call errquit('dimqm_gs:free stack failed',1,MA_ERR)
 
 
       dd =
@@ -173,20 +189,34 @@ c  TODO
      $'---------------------------- DIM/QM RESULTS -------------------'
             write(luout,*)''
 
+            write(LuOut,*) dd
             write(LuOut,*) 'DIM/QM Energy'
             write(LuOut,*) d
             write(LuOut,111) edimqmE
             write(LuOut,222) edimqmN
 c      write(LuOut,444) efld_int
             write(LuOut,333) edimqm
+            write(LuOut,*) dd
+            write(LuOut,*)''
+            call dimqm_printAtoms(rtdb, dbl_mb(k_dimxyz),
+     $                           DIM_nAtoms,DIM_nTypes)
+            call dimqm_printDipole(rtdb,dbl_mb(k_muind),
+     $                           .true., DIM_nAtoms)
          endif
 
-         call dimqm_printAtoms(rtdb, dbl_mb(k_dimxyz),
-     $                           DIM_nAtoms,DIM_nTypes)
 
-        call dimqm_printDipole(rtdb, g_DIMmuind, 1, .true., DIM_nAtoms)
          call dimqm_destroy(rtdb)
       endif
+
+      stat = .true.
+      stat = stat.and.ma_free_heap(l_eqme)
+      stat = stat.and.ma_free_heap(l_muind)
+      stat = stat.and.ma_chop_stack(l_dimxyz)
+      stat = stat.and.ga_destroy(g_eqme)
+      stat = stat.and.ga_destroy(g_eqmn)
+      stat = stat.and.ga_destroy(g_etot)
+      if (.not.stat) 
+     $   call errquit('dimqm_gs:free stack failed',1,MA_ERR)
 
  111  format(' Polarization (Dipole, el.) = ',f20.10)
  222  format(' Polarization (Dipole, nuc) = ',f20.10)

@@ -152,5 +152,12 @@ c -------------------------------------------------------------------
      $  call errquit('dimqm_input: lefield put failed', 1, RTDB_ERR)
       if (.not. rtdb_put(rtdb, 'dimqm:latmdip', mt_log, 1, latmdip))
      $  call errquit('dimqm_input: latmdip put failed', 1, RTDB_ERR)
+c ------------ Finite Field Values ----------------
+      if(.not.rtdb_put(rtdb,'dimqm:finiteFieldX',mt_dbl,1,finiteFieldX))
+     $  call errquit('dimqm_input: finiteFieldX put failed',1,RTDB_ERR)
+      if(.not.rtdb_put(rtdb,'dimqm:finiteFieldY',mt_dbl,1,finiteFieldY))
+     $  call errquit('dimqm_input: finiteFieldY put failed',1,RTDB_ERR)
+      if(.not.rtdb_put(rtdb,'dimqm:finiteFieldZ',mt_dbl,1,finiteFieldZ))
+     $  call errquit('dimqm_input: finiteFieldZ put failed',1,RTDB_ERR)
       return
       end subroutine dimqm_input_new

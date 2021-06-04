@@ -58,6 +58,7 @@ c
       write(LuOut,222) en_dipole_nuc
 c      write(LuOut,444) efld_int
       write(LuOut,333) energy
+
       write(luout,*) dd
       write(luout,*) ''
       if (lefield) then 
